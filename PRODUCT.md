@@ -39,7 +39,11 @@ It does not stop at describing an image. It produces a printable tactile figure 
 - Spoken descriptions in English and Bahasa Indonesia for the demo.
 - AI must be Google's (Gemini). Free-tier quota is small, about 20 requests a day on Gemini 3.8 Flash for this project, so results are saved and never generated twice, and the live site opens on figures already processed.
 - No server code: everything runs in the browser against Firebase.
-- Undecided: the product name; whether braille labels are produced or checked with a standard braille translation library; which Gemini model handles each step.
+- Undecided: whether braille labels are produced or checked with a standard braille translation library; which Gemini model handles each step.
+
+## Brand Commitments
+
+The product is called **Timbul**, Bahasa Indonesia for "raised" or "embossed" (a relief map is *peta timbul*) and also "to emerge". The meaning should be checked with a native speaker before submission.
 
 ## Evidence on Hand
 
