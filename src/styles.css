@@ -210,6 +210,19 @@ a { color: inherit; }
 .about h3 { margin: 0 0 6px; font-size: 20px; }
 .about p { margin: 0; font-size: 16px; font-weight: 600; max-width: 60ch; }
 
+.open-sheet { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px 28px; align-items: center; margin: 0 0 30px; padding: 22px; background: var(--ink); color: var(--yellow); border-radius: 6px; }
+.open-voice { display: flex; align-items: center; gap: 22px; background: var(--yellow); color: var(--ink); border: 0; border-radius: 999px; padding: 16px 34px 16px 18px; cursor: pointer; text-align: left; min-height: 96px; }
+.open-voice svg { width: 64px; height: 64px; flex: none; }
+.open-voice b { display: block; font-size: 30px; line-height: 1.1; }
+.open-voice small { display: block; font-size: 17px; font-weight: 700; margin-top: 4px; }
+.open-voice.on { box-shadow: 0 0 0 6px var(--ink), 0 0 0 10px var(--yellow); }
+.open-typed { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.open-typed label { width: 100%; font-weight: 800; font-size: 18px; }
+.open-typed input { width: 140px; min-height: 52px; border-radius: 999px; border: 3px solid var(--yellow); background: var(--ink); color: var(--yellow); padding: 6px 20px; font-size: 24px; font-weight: 800; }
+.open-typed .btn { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
+.open-status { grid-column: 1 / -1; margin: 0; min-height: 1.2em; font-weight: 700; }
+@media (max-width: 900px) { .open-sheet { grid-template-columns: 1fr; } }
+
 /* ---------- add a page ---------- */
 .add { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 240px minmax(0, 1fr); gap: 24px; padding-block: 10px 24px; align-items: stretch; }
 .drop {

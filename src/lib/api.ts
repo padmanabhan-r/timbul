@@ -40,3 +40,7 @@ export interface Answer {
 export function ask(figure: Figure, lang: Lang, input: { question?: string; audio?: string; audioMime?: string }, focusId?: string) {
   return post<Answer>("/api/ask", { figure, lang, focusId, question: input.question, audioBase64: input.audio, audioMime: input.audioMime });
 }
+
+export function hearSheet(input: { audio?: string; audioMime?: string; text?: string }) {
+  return post<{ heard: string; number: number }>("/api/sheet", { audioBase64: input.audio, audioMime: input.audioMime, text: input.text });
+}

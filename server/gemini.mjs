@@ -269,6 +269,25 @@ Rules: answer only from the figure data and basic school knowledge of the subjec
   return { ...result, model };
 }
 
+// ---------------------------------------------------------------- opening a sheet by its number
+
+const SHEET_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    heard: { type: "STRING", description: "What the student said, as you understood it." },
+    number: { type: "INTEGER", description: "The sheet number the student asked for, or 0 if no number was said." },
+  },
+  required: ["heard", "number"],
+};
+
+/** The student says a sheet number ("sheet two", "nomor dua", "open 12"); Gemini hears which one. */
+export async function hearSheet(key, { audioBase64, audioMime, text }) {
+  const prompt = `A blind student is opening a tactile sheet in Timbul by saying its number, in English or Bahasa Indonesia. ${audioBase64 ? "Listen to the audio." : `They typed: "${text}".`} Return the sheet number they asked for as an integer (for example "sheet two" is 2, "nomor dua belas" is 12), or 0 if they did not say a number.`;
+  const parts = audioBase64 ? [{ inlineData: { mimeType: audioMime || "audio/wav", data: audioBase64 } }, { text: prompt }] : [{ text: prompt }];
+  const { result, model } = await generateAny(key, MODELS.ask, parts, SHEET_SCHEMA, 0, FALLBACK.ask);
+  return { ...result, model };
+}
+
 // ---------------------------------------------------------------- speaking
 
 // Every spoken line is cached on disk by its words, voice and language, so a part's description is

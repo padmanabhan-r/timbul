@@ -4,7 +4,6 @@
 
 import { toBraille, cellDots, cellsWidth, toUnicode, CELL, type Cell } from "./braille";
 import type { SavedFigure, Part, Link } from "./types";
-import qrcode from "qrcode-generator";
 
 type P = [number, number];
 
@@ -53,25 +52,10 @@ export interface Sheet {
   notes: string[];
   checks: Check[];
   dotR: number;
-  /** How the student's phone finds this figure: a QR code in the bottom-right corner, the same code in braille
-   *  bottom-left, and a raised notch at the top-right corner so the sheet can be oriented by touch. */
-  code: { text: string; url: string; cells: Cell[]; dots: P[]; x: number; y: number; qr: { x: number; y: number; size: number; modules: boolean[][] } };
+  /** How the student finds this figure in Timbul: its sheet number in braille, bottom-left, which they say aloud;
+   *  and a raised notch at the top-right corner so the sheet can be oriented by touch. */
+  code: { text: string; cells: Cell[]; dots: P[]; x: number; y: number };
   notch: P[];
-}
-
-/** A short code a person can read or type: six characters from the figure's id. */
-export function shortCode(id: string) {
-  let h = 2166136261;
-  for (const ch of id) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
-  const alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
-  let out = "";
-  for (let i = 0; i < 6; i++) { out += alphabet[h % alphabet.length]; h = Math.floor(h / alphabet.length) || (h * 2654435761) >>> 0; }
-  return out;
-}
-
-export function figureUrl(id: string) {
-  const origin = typeof location !== "undefined" ? location.origin : "https://timbul.app";
-  return `${origin}/#/figure/${id}`;
 }
 
 // ---------------------------------------------------------------- geometry helpers
@@ -343,22 +327,11 @@ function layout(saved: SavedFigure, aspect: number, withKey: boolean, notesIn: s
   const tCells = titleCells.slice(0, maxTitle);
   const title = { text: titleText, cells: tCells, dots: cellDots(tCells, SHEET.margin, SHEET.margin) };
 
-  // The code row along the bottom: braille code on the left, QR code on the right; a raised notch top-right.
-  const url = figureUrl(saved.id);
-  const codeText = shortCode(saved.id);
-  const codeCells = toBraille("code " + codeText).cells;
+  // The sheet number in braille along the bottom-left; a raised notch at the top-right corner.
+  const codeText = `sheet ${saved.number ?? 0}`;
+  const codeCells = toBraille(codeText).cells;
   const codeY = SHEET.h - SHEET.margin - 8;
-  const qr = qrcode(0, "M");
-  qr.addData(url);
-  qr.make();
-  const n = qr.getModuleCount();
-  const modules = Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => qr.isDark(r, c)));
-  const qrSize = 22;
-  const code = {
-    text: codeText, url, cells: codeCells, x: SHEET.margin, y: codeY,
-    dots: cellDots(codeCells, SHEET.margin, codeY),
-    qr: { x: SHEET.w - SHEET.margin - qrSize, y: SHEET.h - SHEET.margin - qrSize + 4, size: qrSize, modules },
-  };
+  const code = { text: codeText, cells: codeCells, x: SHEET.margin, y: codeY, dots: cellDots(codeCells, SHEET.margin, codeY) };
   const notchDots: P[] = [];
   for (let r = 0; r < 6; r++) for (let c = 0; c < 6 - r; c++) notchDots.push([SHEET.w - 6 - c * 2.4, 6 + r * 2.4]);
 
@@ -477,10 +450,7 @@ export function sheetSvg(sheet: Sheet, opts: { ink?: boolean } = {}): string {
   const line = [...sheet.parts.flatMap((p) => p.dots), ...sheet.links.flatMap((l) => l.dots)].map((p) => c(p, sheet.dotR)).join("");
   const fill = sheet.parts.flatMap((p) => p.fill).map((p) => c(p, 0.5)).join("");
   const braille = [...sheet.title.dots, ...sheet.labels.flatMap((l) => l.dots), ...sheet.keyList.flatMap((k) => k.dots), ...sheet.code.dots, ...sheet.notch].map((p) => c(p, CELL.dotR)).join("");
-  const { qr } = sheet.code;
-  const cell = qr.size / qr.modules.length;
-  const qrInk = qr.modules.flatMap((row, r) => row.map((on, k) => (on ? `<rect x="${(qr.x + k * cell).toFixed(2)}" y="${(qr.y + r * cell).toFixed(2)}" width="${cell.toFixed(3)}" height="${cell.toFixed(3)}"/>` : ""))).join("");
-  const codeInk = `<text x="${sheet.code.x}" y="${(sheet.code.y + 10.5).toFixed(1)}" font-size="3.4" font-family="sans-serif">Scan the corner code with Timbul, or type ${sheet.code.text}</text>`;
+  const codeInk = `<text x="${sheet.code.x}" y="${(sheet.code.y + 10.5).toFixed(1)}" font-size="3.4" font-family="sans-serif">${esc(sheet.code.text[0].toUpperCase() + sheet.code.text.slice(1))}: say "${esc(sheet.code.text)}" to Timbul to open this figure</text>`;
   const ink = opts.ink
     ? sheet.labels.map((l) => `<text x="${l.x.toFixed(1)}" y="${(l.y + 9.5).toFixed(1)}" font-size="3.2" font-family="sans-serif">${esc(l.key ? l.key : l.text)}</text>`).join("") +
       sheet.keyList.map((k) => `<text x="${k.x.toFixed(1)}" y="${(k.y + 9.5).toFixed(1)}" font-size="3.2" font-family="sans-serif">${esc(k.key + "  " + k.text)}</text>`).join("")
@@ -489,7 +459,7 @@ export function sheetSvg(sheet: Sheet, opts: { ink?: boolean } = {}): string {
 <svg xmlns="http://www.w3.org/2000/svg" width="${sheet.w}mm" height="${sheet.h}mm" viewBox="0 0 ${sheet.w} ${sheet.h}">
 <title>${esc(sheet.title.text)}</title>
 <rect width="100%" height="100%" fill="#fff"/>
-<g fill="#000">${line}${fill}${braille}${ink}${qrInk}${codeInk}</g>
+<g fill="#000">${line}${fill}${braille}${ink}${codeInk}</g>
 </svg>`;
 }
 

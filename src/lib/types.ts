@@ -42,6 +42,8 @@ export interface SavedFigure {
   id: string;
   createdAt: number;
   sample?: boolean;
+  /** The sheet number printed in braille, which the student says to open it. */
+  number?: number;
   /** The page as uploaded, downscaled, as a data URL or a path. */
   image: string;
   imageW: number;

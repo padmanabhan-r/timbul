@@ -52,6 +52,15 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
     rec.current?.cancel();
   }, []);
   useEffect(() => { figureRef.current?.focus(); }, [saved.id]);
+  // Opened by saying the sheet number: say which sheet this is, so the student knows they have the right one.
+  useEffect(() => {
+    let flag: string | null = null;
+    try { flag = sessionStorage.getItem("timbul:announce"); sessionStorage.removeItem("timbul:announce"); } catch { /* private mode */ }
+    if (flag === saved.id) {
+      const title = lang === "id" ? fig.title_id : fig.title_en;
+      say(lang === "id" ? `Lembar ${saved.number}. ${title}. Sentuh bagian mana pun, atau ajukan pertanyaan.` : `Sheet ${saved.number}. ${title}. Touch any part, or ask a question.`);
+    }
+  }, [saved.id]);
 
   const overview = () => {
     setFocusId(null);

@@ -27,8 +27,18 @@ export async function getFigure(id: string): Promise<SavedFigure | undefined> {
   }
 }
 
+/** Saves a figure, giving it the next free sheet number if it has none. */
 export async function saveFigure(fig: SavedFigure) {
+  if (!fig.number) {
+    const all = await listFigures();
+    fig.number = Math.max(0, ...all.map((f) => f.number || 0)) + 1;
+  }
   await set(PREFIX + fig.id, fig);
+  return fig;
+}
+
+export async function figureByNumber(n: number) {
+  return (await listFigures()).find((f) => f.number === n);
 }
 
 export async function deleteFigure(id: string) {
