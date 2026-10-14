@@ -74,6 +74,19 @@ function FigureViewImpl({ saved, sheet, focusId, onPick, showOriginal, reveal = 
           );
         })}
 
+        {/* the sheet's code row: braille code, the QR code a phone scans, and the raised orientation notch */}
+        <g className="braille">{[...sheet.code.dots, ...sheet.notch].map((p, i) => <circle key={"c" + i} cx={p[0]} cy={p[1]} r={0.72} />)}</g>
+        {ink && (
+          <text className="label-ink" x={sheet.code.x} y={sheet.code.y - 2.2}>{`code ${sheet.code.text}`}</text>
+        )}
+        <g className="qr">
+          {sheet.code.qr.modules.flatMap((row, r) =>
+            row.map((on, c) => {
+              const cell = sheet.code.qr.size / sheet.code.qr.modules.length;
+              return on ? <rect key={`q${r}-${c}`} x={sheet.code.qr.x + c * cell} y={sheet.code.qr.y + r * cell} width={cell + 0.02} height={cell + 0.02} /> : null;
+            }),
+          )}
+        </g>
         {sheet.keyList.map((k) => (
           <g key={"k" + k.key}>
             <g className="braille">{k.dots.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={0.72} />)}</g>

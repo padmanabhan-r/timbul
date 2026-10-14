@@ -122,6 +122,7 @@ a { color: inherit; }
 .figure-svg .label-ink { font: 700 3.6px var(--font); fill: var(--ink); paint-order: stroke; stroke: var(--halo, var(--yellow)); stroke-width: 1.1px; stroke-linejoin: round; }
 .figure-svg .label-ink.focused { font-size: 4.2px; }
 .figure-svg .braille { fill: var(--ink); }
+.figure-svg .qr { fill: var(--ink); }
 .figure-svg .original { opacity: 0.28; mix-blend-mode: multiply; }
 .speaking .figure-svg .focused .dot, .speaking .figure-svg .focus-plate { animation: beat 0.62s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
 @keyframes beat { from { transform: scale(1); } to { transform: scale(1.18); } }

@@ -275,7 +275,19 @@ Rules: answer only from the figure data and basic school knowledge of the subjec
 // generated once and replayed for free after that.
 const SPEECH_CACHE = resolve(process.cwd(), ".cache/speech");
 
+/** Gemini's speech can arrive at full scale and sounds harsh: bring the loudest sample to about -4 dBFS. */
+function level(pcm) {
+  let peak = 1;
+  for (let i = 0; i < pcm.length - 1; i += 2) peak = Math.max(peak, Math.abs(pcm.readInt16LE(i)));
+  const k = Math.min(1, (32767 * 0.63) / peak);
+  if (k >= 1) return pcm;
+  const out = Buffer.alloc(pcm.length);
+  for (let i = 0; i < pcm.length - 1; i += 2) out.writeInt16LE(Math.round(pcm.readInt16LE(i) * k), i);
+  return out;
+}
+
 function wav(pcm, rate = 24000) {
+  pcm = level(pcm);
   const head = Buffer.alloc(44);
   head.write("RIFF", 0);
   head.writeUInt32LE(36 + pcm.length, 4);
@@ -293,7 +305,7 @@ function wav(pcm, rate = 24000) {
 }
 
 export async function speakText(key, text, lang = "en") {
-  const id = createHash("sha256").update(`v2|${VOICE}|${lang}|${text}`).digest("hex").slice(0, 24);
+  const id = createHash("sha256").update(`v3|${VOICE}|${lang}|${text}`).digest("hex").slice(0, 24);
   const file = join(SPEECH_CACHE, `${id}.wav`);
   if (existsSync(file)) return { audio: readFileSync(file), cached: true, file };
   // The text alone: a style instruction in front of it was sometimes read aloud as part of the line.
