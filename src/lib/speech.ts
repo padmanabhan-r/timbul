@@ -15,14 +15,16 @@ function pickVoice(lang: Lang): SpeechSynthesisVoice | undefined {
 }
 
 let current: SpeechSynthesisUtterance | null = null;
+let playing: HTMLAudioElement | null = null;
+let token = 0;
+let geminiVoice = true; // turned off for the session when the server cannot speak
 
-export function speak(text: string, lang: Lang, onEnd?: () => void) {
+function browserSpeak(text: string, lang: Lang, onEnd?: () => void) {
   const synth = window.speechSynthesis;
   if (!synth) {
     onEnd?.();
     return;
   }
-  synth.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = LOCALES[lang][0];
   const voice = pickVoice(lang);
@@ -36,9 +38,40 @@ export function speak(text: string, lang: Lang, onEnd?: () => void) {
   synth.speak(u);
 }
 
+/** Speaks with Gemini's voice (cached by the server), or the browser's own voice if that is unavailable. */
+export function speak(text: string, lang: Lang, onEnd?: () => void) {
+  stopSpeaking();
+  const mine = ++token;
+  if (!geminiVoice) return browserSpeak(text, lang, onEnd);
+  fetch("/api/speak", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, lang }) })
+    .then(async (res) => {
+      if (!res.ok) throw new Error(String(res.status));
+      const url = URL.createObjectURL(await res.blob());
+      if (mine !== token) return URL.revokeObjectURL(url);
+      const audio = new Audio(url);
+      playing = audio;
+      audio.onended = audio.onerror = () => {
+        URL.revokeObjectURL(url);
+        if (playing === audio) playing = null;
+        if (mine === token) onEnd?.();
+      };
+      await audio.play();
+    })
+    .catch(() => {
+      if (mine !== token) return;
+      geminiVoice = false;
+      browserSpeak(text, lang, onEnd);
+    });
+}
+
 export function stopSpeaking() {
+  token++;
   window.speechSynthesis?.cancel();
   current = null;
+  if (playing) {
+    playing.pause();
+    playing = null;
+  }
 }
 
 export function hasVoice(lang: Lang) {

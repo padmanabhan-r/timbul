@@ -18,7 +18,7 @@ Our entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com) (
 ./start.sh
 ```
 
-It installs dependencies on the first run, starts the app on http://localhost:5173 and opens it in your browser. It needs Node.js 18 or newer and a Gemini API key in `.env` as `GEMINI_API_KEY` (see `.env.example`). The key stays on the local server and is never sent to the browser. Use Chrome for the voice features.
+It installs dependencies on the first run, starts the app on http://localhost:5173 and opens it in your browser. It needs Node.js 18 or newer and, in `.env`, an OpenRouter key (`OPENROUTER_API_KEY`) and a Gemini API key (`GEMINI_API_KEY`) (see `.env.example`). The key stays on the local server and is never sent to the browser. Use Chrome for the voice features.
 
 ## How to use it
 
@@ -30,7 +30,8 @@ It installs dependencies on the first run, starts the app on http://localhost:51
 ## Stack
 
 - React with Vite. Locally, Vite's dev server also serves `/api`, which holds the Gemini key.
-- Gemini (Developer API): `gemini-3.8-flash` reads the figure, with `gemini-3.7-flash` and `gemini-3.5-flash` as fallbacks when it is busy or its free allowance is used up; `gemini-3.5-flash-lite` answers questions.
+- Gemini reads the figure (`gemini-3.8-flash`) and answers questions (`gemini-3.5-flash-lite`). Calls go to Gemini through OpenRouter first (`OPENROUTER_API_KEY` in `.env`) and fall back to Google's Gemini API (`GEMINI_API_KEY`), trying several Gemini models in turn when one is busy or out of quota. Set `TIMBUL_PROVIDER=google` to call Google first.
+- Timbul's voice is Gemini text-to-speech (`gemini-3.8-flash-tts`, voice Sulafat) through Google's API, cached on disk so each line is generated once; the browser's own voice is the fallback.
 - Timbul's own code draws every line as raised dots, places the braille labels and runs the checks (`src/lib/tactile.ts`, `src/lib/braille.ts`).
 - Figures you add are kept in the browser (IndexedDB). Firebase Hosting, Firestore and Firebase AI Logic are the deployment target and are not wired up yet.
 

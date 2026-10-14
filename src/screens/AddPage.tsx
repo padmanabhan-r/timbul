@@ -146,7 +146,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
               ) : (
                 <p className="waiting">
                   {step === "error" ? "Stopped." : "Gemini is reading the page…"}
-                  {step === "reading" && <small>{elapsed}s · usually one to three minutes on the free tier</small>}
+                  {step === "reading" && <small>{elapsed}s</small>}
                 </p>
               )}
             </div>

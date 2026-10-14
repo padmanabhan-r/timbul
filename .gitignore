@@ -42,3 +42,6 @@ firebase-debug.log*
 .impeccable/
 .claude/skills/
 .claude/agents/
+
+# Spoken lines cached by the local server
+.cache/

@@ -1,20 +1,32 @@
 // Calls to the Gemini Developer API. Used by the local dev server and the sample builder.
 // The key stays on the server side; the browser never sees it.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { resolve, join } from "node:path";
+import { createHash } from "node:crypto";
 
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
 const KEY_NAMES = ["GEMINI_API_KEY", "GOOGLE_API_KEY", "GOOGLE_GENERATIVE_AI_API_KEY", "VITE_GEMINI_API_KEY"];
 
 // Each model has its own free daily allowance, so when one is busy or used up the next one answers.
 export const MODELS = {
-  read: (process.env.TIMBUL_READ_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash").split(","),
+  read: (process.env.TIMBUL_READ_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash,gemini-3-flash-preview,gemini-2.5-flash").split(","),
   ask: (process.env.TIMBUL_ASK_MODEL || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash").split(","),
+  speak: (process.env.TIMBUL_SPEAK_MODEL || "gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview").split(","),
+};
+export const VOICE = process.env.TIMBUL_VOICE || "Sulafat";
+
+// The same Gemini models through OpenRouter. By default they answer first (the team's choice: Google's
+// free tier is too small and too often busy), and Google's own Gemini API is the fallback.
+// TIMBUL_PROVIDER=google puts Google first. Speech always uses Google's Gemini TTS.
+export const PRIMARY = (process.env.TIMBUL_PROVIDER || "openrouter").toLowerCase();
+export const FALLBACK = {
+  read: (process.env.TIMBUL_READ_FALLBACK || "google/gemini-3.8-flash,google/gemini-3.5-flash").split(","),
+  ask: (process.env.TIMBUL_ASK_FALLBACK || "google/gemini-3.5-flash-lite,google/gemini-3.5-flash").split(","),
 };
 
-export function loadKey(root = process.cwd()) {
-  for (const name of KEY_NAMES) if (process.env[name]) return process.env[name].trim();
+export function loadKey(root = process.cwd(), names = KEY_NAMES) {
+  for (const name of names) if (process.env[name]) return process.env[name].trim();
   for (const file of [".env.local", ".env"]) {
     let text;
     try {
@@ -24,7 +36,7 @@ export function loadKey(root = process.cwd()) {
     }
     for (const raw of text.split("\n")) {
       const line = raw.trim().replace(/^export\s+/, "");
-      for (const name of KEY_NAMES) {
+      for (const name of names) {
         if (line.startsWith(name + "=")) {
           const value = line.slice(name.length + 1).trim().replace(/^["']|["']$/g, "");
           if (value) return value;
@@ -80,10 +92,55 @@ async function generate(key, model, parts, schema, temperature = 0.2) {
   return JSON.parse(text);
 }
 
+// Gemini's schema dialect (OBJECT, STRING …) to plain JSON Schema, for OpenRouter.
+function jsonSchema(s) {
+  if (Array.isArray(s)) return s.map(jsonSchema);
+  if (!s || typeof s !== "object") return s;
+  const out = {};
+  for (const [k, v] of Object.entries(s)) out[k] = k === "type" ? String(v).toLowerCase() : jsonSchema(v);
+  return out;
+}
+
+async function openrouter(model, parts, schema, temperature) {
+  const key = loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]);
+  if (!key) throw new GeminiError("No OpenRouter key", 401, "key");
+  const content = parts.map((p) => {
+    if (p.text) return { type: "text", text: p.text };
+    const { mimeType, data } = p.inlineData;
+    if (mimeType.startsWith("audio/")) return { type: "input_audio", input_audio: { data, format: mimeType.split("/")[1] === "wav" ? "wav" : "mp3" } };
+    return { type: "image_url", image_url: { url: `data:${mimeType};base64,${data}` } };
+  });
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, "X-Title": "Timbul" },
+    body: JSON.stringify({
+      model, temperature, messages: [{ role: "user", content }],
+      response_format: { type: "json_schema", json_schema: { name: "answer", strict: false, schema: jsonSchema(schema) } },
+      reasoning: { effort: "low" },
+    }),
+  });
+  const body = await res.text();
+  if (!res.ok) throw new GeminiError(body.slice(0, 400), res.status, res.status === 429 ? "quota" : "other");
+  const text = JSON.parse(body).choices?.[0]?.message?.content || "";
+  if (!text) throw new GeminiError("OpenRouter returned an empty answer", 502, "other");
+  return JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, ""));
+}
+
 /** Tries each model in turn; moves on when one is busy (503) or its free allowance is used up (429). */
-async function generateAny(key, models, parts, schema, temperature) {
+async function generateAny(key, models, parts, schema, temperature, fallback = []) {
   let last;
-  for (const model of models) {
+  const routed = fallback.map((m) => "openrouter:" + m);
+  const order = !fallback.length ? models : PRIMARY === "openrouter" && loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]) ? [...routed, ...models] : [...models, ...routed];
+  for (const model of order) {
+    if (model.startsWith("openrouter:")) {
+      try {
+        return { result: await openrouter(model.slice(11), parts, schema, temperature), model };
+      } catch (e) {
+        last = e;
+        console.warn(`[timbul] ${model} failed (${e.status}); trying the next model`);
+        continue;
+      }
+    }
     try {
       return { result: await generate(key, model, parts, schema, temperature), model };
     } catch (e) {
@@ -177,7 +234,7 @@ function normalise(raw) {
 }
 
 export async function readFigure(key, imageBase64, mimeType) {
-  const { result, model } = await generateAny(key, MODELS.read, [{ inlineData: { mimeType, data: imageBase64 } }, { text: READ_PROMPT }], FIGURE_SCHEMA, 0.1);
+  const { result, model } = await generateAny(key, MODELS.read, [{ inlineData: { mimeType, data: imageBase64 } }, { text: READ_PROMPT }], FIGURE_SCHEMA, 0.1, FALLBACK.read);
   return { ...normalise(result), model };
 }
 
@@ -208,6 +265,62 @@ ${focusId ? `The student's finger or cursor is on the part "${focusId}".` : ""}
 Answer the student's ${audioBase64 ? "spoken question in the audio" : `question: "${question}"`}
 Rules: answer only from the figure data and basic school knowledge of the subject. Use spatial words (left, right, above, below, inside, connected to). Be short and warm. Answer in ${language}. If the question is not about the figure, answer briefly and guide them back to it.`;
   const parts = audioBase64 ? [{ inlineData: { mimeType: audioMime || "audio/wav", data: audioBase64 } }, { text }] : [{ text }];
-  const { result, model } = await generateAny(key, MODELS.ask, parts, ASK_SCHEMA, 0.3);
+  const { result, model } = await generateAny(key, MODELS.ask, parts, ASK_SCHEMA, 0.3, FALLBACK.ask);
   return { ...result, model };
+}
+
+// ---------------------------------------------------------------- speaking
+
+// Every spoken line is cached on disk by its words, voice and language, so a part's description is
+// generated once and replayed for free after that.
+const SPEECH_CACHE = resolve(process.cwd(), ".cache/speech");
+
+function wav(pcm, rate = 24000) {
+  const head = Buffer.alloc(44);
+  head.write("RIFF", 0);
+  head.writeUInt32LE(36 + pcm.length, 4);
+  head.write("WAVEfmt ", 8);
+  head.writeUInt32LE(16, 16);
+  head.writeUInt16LE(1, 20);
+  head.writeUInt16LE(1, 22);
+  head.writeUInt32LE(rate, 24);
+  head.writeUInt32LE(rate * 2, 28);
+  head.writeUInt16LE(2, 32);
+  head.writeUInt16LE(16, 34);
+  head.write("data", 36);
+  head.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([head, pcm]);
+}
+
+export async function speakText(key, text, lang = "en") {
+  const id = createHash("sha256").update(`v2|${VOICE}|${lang}|${text}`).digest("hex").slice(0, 24);
+  const file = join(SPEECH_CACHE, `${id}.wav`);
+  if (existsSync(file)) return { audio: readFileSync(file), cached: true, file };
+  // The text alone: a style instruction in front of it was sometimes read aloud as part of the line.
+  let last;
+  for (const model of MODELS.speak) {
+    const res = await fetch(`${API}/${model}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text }] }],
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE } } } },
+      }),
+    });
+    const body = await res.text();
+    if (!res.ok) {
+      last = new GeminiError(body.slice(0, 400), res.status, res.status === 429 ? "quota" : res.status === 404 ? "model" : "other");
+      if ([429, 404, 500, 503].includes(res.status)) continue;
+      throw last;
+    }
+    const part = JSON.parse(body).candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
+    if (!part) { last = new GeminiError("No audio in the answer", 502, "other"); continue; }
+    const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1] || 24000);
+    const audio = wav(Buffer.from(part.inlineData.data, "base64"), rate);
+    mkdirSync(SPEECH_CACHE, { recursive: true });
+    writeFileSync(file, audio);
+    writeFileSync(file.replace(/\.wav$/, ".json"), JSON.stringify({ text, lang, voice: VOICE, model }, null, 1));
+    return { audio, cached: false, file, model };
+  }
+  throw last;
 }
