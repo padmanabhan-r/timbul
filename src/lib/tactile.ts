@@ -440,7 +440,7 @@ export function sheetSvg(sheet: Sheet, opts: { ink?: boolean } = {}): string {
   const braille = [...sheet.title.dots, ...sheet.labels.flatMap((l) => l.dots), ...sheet.keyList.flatMap((k) => k.dots)].map((p) => c(p, CELL.dotR)).join("");
   const ink = opts.ink
     ? sheet.labels.map((l) => `<text x="${l.x.toFixed(1)}" y="${(l.y + 9.5).toFixed(1)}" font-size="3.2" font-family="sans-serif">${esc(l.key ? l.key : l.text)}</text>`).join("") +
-      sheet.keyList.map((k) => `<text x="${(k.x + 66).toFixed(1)}" y="${(k.y + 4).toFixed(1)}" font-size="3.2" text-anchor="end" font-family="sans-serif">${esc(k.key + " " + k.text)}</text>`).join("")
+      sheet.keyList.map((k) => `<text x="${k.x.toFixed(1)}" y="${(k.y + 9.5).toFixed(1)}" font-size="3.2" font-family="sans-serif">${esc(k.key + "  " + k.text)}</text>`).join("")
     : "";
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${sheet.w}mm" height="${sheet.h}mm" viewBox="0 0 ${sheet.w} ${sheet.h}">
