@@ -55,11 +55,15 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
   // Opened by saying the sheet number: say which sheet this is, so the student knows they have the right one.
   useEffect(() => {
     let flag: string | null = null;
-    try { flag = sessionStorage.getItem("timbul:announce"); sessionStorage.removeItem("timbul:announce"); } catch { /* private mode */ }
-    if (flag === saved.id) {
+    try { flag = sessionStorage.getItem("timbul:announce"); } catch { /* private mode */ }
+    if (flag !== saved.id) return;
+    // Deferred, so a remount (React runs effects twice in development) does not cancel it.
+    const t = setTimeout(() => {
+      try { sessionStorage.removeItem("timbul:announce"); } catch { /* private mode */ }
       const title = lang === "id" ? fig.title_id : fig.title_en;
       say(lang === "id" ? `Lembar ${saved.number}. ${title}. Sentuh bagian mana pun, atau ajukan pertanyaan.` : `Sheet ${saved.number}. ${title}. Touch any part, or ask a question.`);
-    }
+    }, 250);
+    return () => clearTimeout(t);
   }, [saved.id]);
 
   const overview = () => {
