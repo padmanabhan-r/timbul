@@ -1,0 +1,104 @@
+{
+ "found": true,
+ "title_en": "Simple Circuit with Battery and Resistor",
+ "title_id": "Rangkaian Sederhana dengan Baterai dan Resistor",
+ "subject": "Physics",
+ "figure_type": "circuit",
+ "overview_en": "A simple circuit diagram showing a closed loop. A battery box sits at the bottom, connected by wires on each side to a zigzag resistor symbol at the top.",
+ "overview_id": "Diagram rangkaian listrik sederhana berbentuk satu lingkaran tertutup. Sebuah baterai terletak di bagian bawah, terhubung oleh kabel di kedua sisinya ke sebuah resistor zig-zag di bagian atas.",
+ "parts": [
+  {
+   "id": "battery",
+   "name_en": "Battery",
+   "name_id": "Baterai",
+   "label": "battery",
+   "kind": "component",
+   "shape": "rect",
+   "detail_en": "A large rectangular block representing the electrical power source, located in the lower-middle area of the circuit.",
+   "detail_id": "Kotak persegi panjang besar sebagai sumber daya listrik, terletak di bagian tengah bawah rangkaian.",
+   "box": [
+    239,
+    432,
+    698,
+    930
+   ],
+   "outline": []
+  },
+  {
+   "id": "resistor",
+   "name_en": "Resistor",
+   "name_id": "Resistor",
+   "label": "resistor",
+   "kind": "component",
+   "shape": "resistor",
+   "detail_en": "A zigzag line representing an electrical resistor, placed horizontally along the top of the circuit.",
+   "detail_id": "Garis zig-zag yang melambangkan hambatan listrik (resistor), berada mendatar di bagian atas rangkaian.",
+   "box": [
+    292,
+    67,
+    666,
+    269
+   ],
+   "outline": []
+  }
+ ],
+ "links": [
+  {
+   "from": "battery",
+   "to": "resistor",
+   "kind": "wire",
+   "path": [
+    [
+     239,
+     681
+    ],
+    [
+     126,
+     681
+    ],
+    [
+     126,
+     168
+    ],
+    [
+     292,
+     168
+    ]
+   ]
+  },
+  {
+   "from": "resistor",
+   "to": "battery",
+   "kind": "wire",
+   "path": [
+    [
+     666,
+     168
+    ],
+    [
+     874,
+     168
+    ],
+    [
+     874,
+     681
+    ],
+    [
+     698,
+     681
+    ]
+   ]
+  }
+ ],
+ "left_out": [
+  "Outer border box surrounding the entire figure."
+ ],
+ "figure_box": [
+  118,
+  59,
+  882,
+  938
+ ],
+ "coords": "image",
+ "model": "gemini-3.8-flash"
+}

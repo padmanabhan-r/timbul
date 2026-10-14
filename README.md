@@ -12,17 +12,26 @@ Our entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com) (
 
 > Submission deadline: **18 Oct 2026**. Rules, themes and rubric are in [docs/HACKATHON_BRIEF.md](docs/HACKATHON_BRIEF.md). What the product is and who it is for is in [PRODUCT.md](PRODUCT.md).
 
-## Stack
-
-- React with Vite, hosted on Firebase Hosting
-- Gemini through Firebase AI Logic (Gemini Developer API)
-- Firestore for saved figures
-
-## Setup
+## Run it
 
 ```bash
-cp .env.example .env
-git config core.hooksPath .githooks
+./start.sh
 ```
 
-The `.githooks/commit-msg` hook removes AI co-author trailers from commit messages, so only the human author is credited.
+It installs dependencies on the first run, starts the app on http://localhost:5173 and opens it in your browser. It needs Node.js 18 or newer and a Gemini API key in `.env` as `GEMINI_API_KEY` (see `.env.example`). The key stays on the local server and is never sent to the browser. Use Chrome for the voice features.
+
+## How to use it
+
+1. **Library.** Opens on two sample figures (a series circuit and a plant cell) that work without using any Gemini allowance.
+2. **Add a page.** Choose or take a photo of a textbook page with a diagram. Gemini reads it (one to three minutes on the free tier), then the tactile figure feeds out line by line and is checked. It is saved in your browser.
+3. **Explore.** Click a part, or use the arrow keys to move between parts as a finger would; each part is spoken. Press **O** for the overview. Press **M** or the microphone button to ask a question by voice, and press it again to send; or type a question. Switch the spoken language between English and Bahasa Indonesia at the top right.
+4. **Checks.** The strip at the bottom shows whether the sheet passes four tactile-graphics rules. **Show original** lays the page under the tactile drawing to compare them. **Print tactile sheet** downloads an A4 SVG in real millimetres for swell paper or an embosser.
+
+## Stack
+
+- React with Vite. Locally, Vite's dev server also serves `/api`, which holds the Gemini key.
+- Gemini (Developer API): `gemini-3.8-flash` reads the figure, with `gemini-3.7-flash` and `gemini-3.5-flash` as fallbacks when it is busy or its free allowance is used up; `gemini-3.5-flash-lite` answers questions.
+- Timbul's own code draws every line as raised dots, places the braille labels and runs the checks (`src/lib/tactile.ts`, `src/lib/braille.ts`).
+- Figures you add are kept in the browser (IndexedDB). Firebase Hosting, Firestore and Firebase AI Logic are the deployment target and are not wired up yet.
+
+The `.githooks/commit-msg` hook removes AI co-author trailers from commit messages, so only the human author is credited (`git config core.hooksPath .githooks`).

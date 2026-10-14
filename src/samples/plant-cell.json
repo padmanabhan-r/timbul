@@ -1,0 +1,181 @@
+{
+ "found": true,
+ "title_en": "Plant Cell Structure",
+ "title_id": "Struktur Sel Tumbuhan",
+ "subject": "Biology",
+ "figure_type": "biology",
+ "overview_en": "A cutaway diagram of a plant cell. A rigid outer cell wall encases the cell, surrounding a central liquid area containing a large central vacuole in the middle and a round nucleus to the lower right, alongside various smaller organelles.",
+ "overview_id": "Diagram irisan sel tumbuhan. Dinding sel yang kaku membungkus sel, mengelilingi sitoplasma dengan vakuola besar di bagian tengah dan inti sel bulat di kanan bawah, bersama organel-organel lainnya.",
+ "parts": [
+  {
+   "id": "cell_wall",
+   "name_en": "Cell wall and plasma membrane",
+   "name_id": "Dinding sel dan membran plasma",
+   "label": "wall",
+   "kind": "region",
+   "shape": "polygon",
+   "detail_en": "The thick outer protective boundary of the plant cell, providing rigid structure and support.",
+   "detail_id": "Lapisan pelindung luar yang tebal pada sel tumbuhan, memberikan bentuk yang kaku dan perlindungan.",
+   "box": [
+    285,
+    192,
+    873,
+    888
+   ],
+   "outline": [
+    [
+     563,
+     203
+    ],
+    [
+     749,
+     271
+    ],
+    [
+     856,
+     433
+    ],
+    [
+     839,
+     697
+    ],
+    [
+     654,
+     881
+    ],
+    [
+     467,
+     727
+    ],
+    [
+     323,
+     677
+    ],
+    [
+     296,
+     322
+    ]
+   ]
+  },
+  {
+   "id": "vacuole",
+   "name_en": "Central vacuole",
+   "name_id": "Vakuola sentral",
+   "label": "vacuole",
+   "kind": "region",
+   "shape": "ellipse",
+   "detail_en": "A very large, fluid-filled storage sac occupying the center of the cell.",
+   "detail_id": "Kantung penyimpan berukuran sangat besar berisi cairan yang menempati bagian tengah sel.",
+   "box": [
+    413,
+    307,
+    618,
+    606
+   ],
+   "outline": []
+  },
+  {
+   "id": "nucleus",
+   "name_en": "Nucleus",
+   "name_id": "Nukleus (inti sel)",
+   "label": "nucleus",
+   "kind": "region",
+   "shape": "ellipse",
+   "detail_en": "A large round organelle containing genetic material, located to the lower right of the central vacuole.",
+   "detail_id": "Organel bulat besar penyimpan materi genetik, terletak di kanan bawah vakuola sentral.",
+   "box": [
+    520,
+    474,
+    663,
+    661
+   ],
+   "outline": []
+  },
+  {
+   "id": "chloroplast",
+   "name_en": "Chloroplast",
+   "name_id": "Kloroplas",
+   "label": "chloroplast",
+   "kind": "object",
+   "shape": "ellipse",
+   "detail_en": "An oval organelle responsible for photosynthesis, located on the upper-left side near the wall.",
+   "detail_id": "Organel berbentuk lonjong tempat fotosintesis berlangsung, berada di sisi kiri atas dekat dinding sel.",
+   "box": [
+    370,
+    361,
+    417,
+    467
+   ],
+   "outline": []
+  },
+  {
+   "id": "mitochondrion",
+   "name_en": "Mitochondrion",
+   "name_id": "Mitokondria",
+   "label": "mitochondria",
+   "kind": "object",
+   "shape": "ellipse",
+   "detail_en": "A small oval power-generating organelle with folded inner membranes, positioned on the lower-left side.",
+   "detail_id": "Organel lonjong kecil penghasil energi dengan membran dalam berlipat, terletak di sisi kiri bawah.",
+   "box": [
+    381,
+    524,
+    434,
+    582
+   ],
+   "outline": []
+  },
+  {
+   "id": "golgi",
+   "name_en": "Golgi apparatus",
+   "name_id": "Aparatus Golgi",
+   "label": "golgi",
+   "kind": "object",
+   "shape": "ellipse",
+   "detail_en": "A stack of folded membranes near the bottom center, involved in packaging proteins and lipids.",
+   "detail_id": "Tumpukan membran berlipat di bagian bawah tengah yang mengemas protein dan lipid.",
+   "box": [
+    463,
+    592,
+    526,
+    681
+   ],
+   "outline": []
+  },
+  {
+   "id": "er",
+   "name_en": "Endoplasmic reticulum",
+   "name_id": "Retikulum endoplasma",
+   "label": "er",
+   "kind": "region",
+   "shape": "ellipse",
+   "detail_en": "An intricate folded network directly surrounding and extending outward from the nucleus.",
+   "detail_id": "Jaringan lipatan membran rumit yang mengelilingi inti sel.",
+   "box": [
+    584,
+    429,
+    686,
+    549
+   ],
+   "outline": []
+  }
+ ],
+ "links": [],
+ "left_out": [
+  "Plasmodesmata",
+  "Filamentous cytoskeleton",
+  "Peroxisome",
+  "Small membranous vesicles and Golgi vesicles",
+  "Ribosomes",
+  "Internal sub-structures like thylakoids, starch grains, nuclear pores, and nucleolus",
+  "External 3D block shading of the cell wall"
+ ],
+ "figure_box": [
+  277,
+  184,
+  881,
+  896
+ ],
+ "coords": "image",
+ "model": "gemini-3.8-flash"
+}
