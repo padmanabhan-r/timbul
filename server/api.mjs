@@ -1,7 +1,7 @@
 // Timbul's API, written once and served three ways: by the Vite dev server (vite.config.ts), by the Node server
 // that runs on Cloud Run (server/index.mjs), and by Vercel functions (api/[route].mjs). The Gemini key stays here.
 
-import { readFigure, locateFigure, verifyFigure, askFigure, speakText, hearSheet, loadKey, MODELS, PRIMARY, GeminiError } from "./gemini.mjs";
+import { readFigure, locateFigure, verifyFigure, pointAt, askFigure, speakText, hearSheet, loadKey, MODELS, PRIMARY, GeminiError } from "./gemini.mjs";
 import { listSheets, saveSheet, store } from "./library.mjs";
 
 const key = loadKey();
@@ -33,6 +33,7 @@ const ROUTES = {
   read: async (b) => json(200, await readFigure(key, b.image, b.mime)),
   locate: async (b) => json(200, await locateFigure(key, b)),
   verify: async (b) => json(200, await verifyFigure(key, b)),
+  point: async (b) => json(200, await pointAt(key, b)),
   sheet: async (b) => json(200, await hearSheet(key, b)),
   ask: async (b) => json(200, await askFigure(key, b)),
   speak: async (b) => {

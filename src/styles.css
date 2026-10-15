@@ -264,6 +264,16 @@ a { color: inherit; }
 .add-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
 .add-error { grid-column: 1 / -1; border: 3px solid var(--ink); background: var(--white); padding: 16px 20px; border-radius: 6px; font-weight: 700; }
 
+/* point and ask: the camera over the printed sheet */
+.point-open { width: 100%; }
+.point { position: fixed; z-index: 50; right: 24px; bottom: 24px; width: min(440px, calc(100vw - 32px)); background: var(--ink); color: var(--yellow); border-radius: 10px; padding: 14px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45); display: grid; gap: 12px; }
+.point video { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; background: #111; }
+.point-help { margin: 0; font-weight: 700; font-size: 16px; line-height: 1.35; }
+.point-actions { display: flex; gap: 10px; }
+.point-actions .btn { flex: 1; background: var(--yellow); color: var(--ink); border-color: var(--yellow); min-height: 52px; font-size: 18px; }
+.point-actions .btn.ghost { background: transparent; color: var(--yellow); }
+@media (max-width: 900px) { .point { left: 16px; right: 16px; bottom: 16px; width: auto; } }
+
 /* parts list: for screen readers on a laptop, visible chips on a phone */
 .parts-list { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; list-style: none; margin: 0; padding: 0; }
 .parts-list button { font: inherit; }

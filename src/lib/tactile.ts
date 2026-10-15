@@ -513,12 +513,18 @@ export function sheetSvg(sheet: Sheet, opts: { ink?: boolean } = {}): string {
 </svg>`;
 }
 
-/** The drawing Gemini checks against the page: the dots over a faded copy of the original, each part's id beside it in grey. */
-export function checkSvg(sheet: Sheet, saved: SavedFigure): string {
-  const [bx0, by0, bx1, by1] = saved.figure.figure_box?.length === 4 ? saved.figure.figure_box : [0, 0, 1000, 1000];
-  const imgW = (sheet.draw.w * 1000) / Math.max(1, bx1 - bx0);
-  const imgH = (sheet.draw.h * 1000) / Math.max(1, by1 - by0);
-  const under = `<image href="${saved.image}" x="${(sheet.draw.x - (bx0 / 1000) * imgW).toFixed(2)}" y="${(sheet.draw.y - (by0 / 1000) * imgH).toFixed(2)}" width="${imgW.toFixed(2)}" height="${imgH.toFixed(2)}" preserveAspectRatio="none" opacity="0.35"/>`;
+/**
+ * The drawing Gemini looks at: the dots with each part's id beside it in grey. With the saved figure, a faded copy
+ * of the original lies underneath (for the self-check); without it, it is the sheet as printed (for Point and ask).
+ */
+export function checkSvg(sheet: Sheet, saved?: SavedFigure): string {
+  let under = "";
+  if (saved) {
+    const [bx0, by0, bx1, by1] = saved.figure.figure_box?.length === 4 ? saved.figure.figure_box : [0, 0, 1000, 1000];
+    const imgW = (sheet.draw.w * 1000) / Math.max(1, bx1 - bx0);
+    const imgH = (sheet.draw.h * 1000) / Math.max(1, by1 - by0);
+    under = `<image href="${saved.image}" x="${(sheet.draw.x - (bx0 / 1000) * imgW).toFixed(2)}" y="${(sheet.draw.y - (by0 / 1000) * imgH).toFixed(2)}" width="${imgW.toFixed(2)}" height="${imgH.toFixed(2)}" preserveAspectRatio="none" opacity="0.35"/>`;
+  }
   const tags = sheet.parts
     .map((p) => `<text x="${(p.box[0] + 0.8).toFixed(1)}" y="${(p.box[1] - 1).toFixed(1)}" font-size="3.6" font-family="sans-serif" fill="#777">${esc(p.part.id)}</text>`)
     .join("");

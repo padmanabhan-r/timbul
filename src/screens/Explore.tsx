@@ -5,6 +5,7 @@ import { ask, ApiError } from "../lib/api";
 import { saveFigure } from "../lib/store";
 import { speak, stopSpeaking, startRecording, type Recording } from "../lib/speech";
 import { FigureView } from "../components/FigureView";
+import { PointCamera } from "../components/PointCamera";
 import { Checks, MicIcon, TopBar, Wave, Who } from "../components/Bits";
 
 interface Slip {
@@ -25,6 +26,7 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
   const [error, setError] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [showOriginal, setShowOriginal] = useState(false);
+  const [pointing, setPointing] = useState(false);
   // A sheet the teacher made is printed only once they have approved it beside the original.
   const [approved, setApproved] = useState(Boolean(saved.sample || saved.approved));
   const [level, setLevel] = useState(0);
@@ -175,6 +177,7 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
     else if (k === "enter" && focusId) { e.preventDefault(); describe(focusId); }
     else if (k === "o") overview();
     else if (k === "m") toggleMic();
+    else if (k === "p") setPointing((v) => !v);
     else if (k === "escape") { stopSpeaking(); setMode("idle"); }
   };
 
@@ -220,6 +223,7 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
             <span><kbd>← ↑ → ↓</kbd>{lang === "id" ? "pindah antarbagian" : "move between parts"}</span>
             <span><kbd>O</kbd>{lang === "id" ? "gambaran umum" : "overview"}</span>
             <span><kbd>M</kbd>{lang === "id" ? "tanya dengan suara" : "ask by voice"}</span>
+            <span><kbd>P</kbd>{lang === "id" ? "tunjuk dan tanya" : "point and ask"}</span>
             <span><kbd>Esc</kbd>{lang === "id" ? "berhenti bicara" : "stop speaking"}</span>
           </p>
         </section>
@@ -260,6 +264,9 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
               <input id="ask-input" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={lang === "id" ? "Atau ketik pertanyaan…" : "Or type a question…"} autoComplete="off" />
               <button className="btn on-ink-btn" type="submit" disabled={!question.trim() || mode === "thinking"}>{lang === "id" ? "Tanya" : "Ask"}</button>
             </form>
+            <button className="btn on-ink-btn point-open" type="button" aria-pressed={pointing} onClick={() => setPointing((v) => !v)}>
+              {lang === "id" ? "Tunjuk dan tanya" : "Point and ask"}
+            </button>
           </div>
         </aside>
 
@@ -277,6 +284,7 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
           </div>
         </footer>
       </main>
+      {pointing && <PointCamera sheet={sheet} lang={lang} onFound={(id) => describe(id)} onSay={say} onClose={() => setPointing(false)} />}
       <div className="sr-only" aria-live="assertive">{announce}</div>
       {sheet.notes.length > 0 && <p className="sr-only">{sheet.notes.join(" ")}</p>}
     </div>

@@ -3,6 +3,7 @@ import type { Figure, Finding, Lang, SavedFigure } from "../lib/types";
 import { readPage, locateFigure, verifyDrawing, ApiError } from "../lib/api";
 import { saveFigure } from "../lib/store";
 import { buildSheet, checkSvg } from "../lib/tactile";
+import { svgToPng } from "../lib/render";
 import { FigureView } from "../components/FigureView";
 import { DotMark, TopBar, Checks } from "../components/Bits";
 
@@ -11,23 +12,8 @@ type Step = "pick" | "reading" | "checking" | "drawing" | "done" | "error";
 const STAGES = ["Found the figure", "Read every part", "Gemini checked its drawing", "Braille labels", "Tactile rules checked", "Ready for approval"];
 const ROUNDS = 2;
 
-/** The draft drawing as a PNG, for Gemini to compare with the page. */
-async function drawingPng(saved: SavedFigure, sheet = buildSheet(saved)): Promise<string> {
-  const svg = checkSvg(sheet, saved);
-  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-  const img = new Image();
-  img.src = url;
-  await img.decode();
-  const canvas = document.createElement("canvas");
-  canvas.width = 1400;
-  canvas.height = Math.round((1400 * 210) / 297);
-  const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  URL.revokeObjectURL(url);
-  return canvas.toDataURL("image/png").split(",")[1];
-}
+/** The draft drawing over the page, as a PNG, for Gemini to compare with the page. */
+const drawingPng = (saved: SavedFigure, sheet = buildSheet(saved)) => svgToPng(checkSvg(sheet, saved));
 
 /** Shrinks the photo before it is sent and stored, so a phone photo stays small. */
 async function prepare(file: File): Promise<{ dataUrl: string; base64: string; w: number; h: number }> {

@@ -381,6 +381,38 @@ function applyReview(figure, r) {
   return { figure: changed ? { ...figure, parts, links, figure_box: extent(parts, links) } : figure, matches: Boolean(r.matches) && !changed, changed, findings };
 }
 
+// ---------------------------------------------------------------- point and ask
+
+const POINT_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    sheet_visible: { type: "BOOLEAN", description: "Whether the printed tactile sheet is in the photo at all." },
+    finger_visible: { type: "BOOLEAN", description: "Whether a fingertip is touching or pointing at the sheet." },
+    part: { type: "STRING", description: "The id (from image 2) of the part under the fingertip, or of the nearest part within about 1 cm. Empty if none." },
+    note_en: { type: "STRING", description: "One short sentence to speak to the student, in English." },
+    note_id: { type: "STRING", description: "The same sentence in Bahasa Indonesia." },
+  },
+  required: ["sheet_visible", "finger_visible", "part", "note_en", "note_id"],
+};
+
+const POINT_PROMPT = `A blind student is holding a phone above a printed tactile sheet and touching it with a fingertip, asking "what is this?".
+Image 1 is the phone's photo. Image 2 is the same sheet as Timbul drew it before printing: every line is a row of dots, and each part carries its id in small grey text.
+Find the fingertip in image 1: the tip of the finger that touches the paper. Line the two images up using the outlines, the braille and the triangle of dots in the sheet's top-right corner (its orientation notch); the photo may be rotated, tilted, upside down or partly out of frame.
+Then say which part of image 2 the fingertip is on, or the nearest part within about 1 cm. Give that part's id exactly as written in image 2.
+If you cannot see the sheet, or no fingertip is on it, leave part empty and say in the note what the student should do, kindly and briefly (for example: hold the phone a little higher, or put one finger on the sheet). If a part is found, the note is like "Your finger is on the nucleus."`;
+
+/** Point and ask: which part of the printed sheet the student's fingertip is on, from a phone photo. */
+export async function pointAt(key, { photo, mime, reference, parts = [] }) {
+  const content = [
+    { inlineData: { mimeType: mime || "image/jpeg", data: photo } },
+    { inlineData: { mimeType: "image/png", data: reference } },
+    { text: `${POINT_PROMPT}\n\nThe part ids: ${parts.join(", ")}` },
+  ];
+  const { result, model } = await generateAny(key, MODELS.read.slice(0, 3), content, POINT_SCHEMA, 0, FALLBACK.read.slice(0, 1), "low", 45_000);
+  const part = parts.includes(result.part) ? result.part : "";
+  return { ...result, part, model };
+}
+
 // ---------------------------------------------------------------- answering a question
 
 const ASK_SCHEMA = {

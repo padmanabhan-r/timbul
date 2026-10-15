@@ -40,6 +40,18 @@ export function verifyDrawing(image: string, mime: string, drawing: string, figu
   return post<{ figure: Figure; matches: boolean; changed: number; findings: Finding[] }>("/api/verify", { image, mime, drawing, figure, checks });
 }
 
+export interface PointResult {
+  sheet_visible: boolean;
+  finger_visible: boolean;
+  part: string;
+  note_en: string;
+  note_id: string;
+}
+
+export function pointAt(photo: string, reference: string, parts: string[]) {
+  return post<PointResult>("/api/point", { photo, mime: "image/jpeg", reference, parts });
+}
+
 export interface Answer {
   heard: string;
   answer: string;
