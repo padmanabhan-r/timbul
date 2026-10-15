@@ -62,6 +62,7 @@ async function generate(key, model, parts, schema, temperature = 0.2) {
     try {
       res = await fetch(`${API}/${model}:generateContent`, {
         method: "POST",
+        signal: AbortSignal.timeout(90_000),
         headers: { "Content-Type": "application/json", "x-goog-api-key": key },
         body: JSON.stringify({
           contents: [{ role: "user", parts }],
@@ -112,6 +113,7 @@ async function openrouter(model, parts, schema, temperature, effort = "low") {
   });
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
+    signal: AbortSignal.timeout(90_000),
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, "X-Title": "Timbul" },
     body: JSON.stringify({
       model, temperature, messages: [{ role: "user", content }],
@@ -464,14 +466,23 @@ export async function speakText(key, text, lang = "en") {
   // The text alone: a style instruction in front of it was sometimes read aloud as part of the line.
   let last;
   for (const model of MODELS.speak) {
-    const res = await fetch(`${API}/${model}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text }] }],
+    // a speech model that hangs is given up on after 25 seconds, and the next one tries
+    let res;
+    try {
+      res = await fetch(`${API}/${model}:generateContent`, {
+        method: "POST",
+        signal: AbortSignal.timeout(25_000),
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text }] }],
         generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: VOICE } } } },
-      }),
-    });
+        }),
+      });
+    } catch (e) {
+      last = new GeminiError(`${model}: ${e.name === "TimeoutError" ? "timed out" : e.message}`, 504, "other");
+      console.warn(`[timbul] ${model} ${last.message}; trying the next voice model`);
+      continue;
+    }
     const body = await res.text();
     if (!res.ok) {
       last = new GeminiError(body.slice(0, 400), res.status, res.status === 429 ? "quota" : res.status === 404 ? "model" : "other");
