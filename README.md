@@ -8,7 +8,7 @@ Our entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com) (
 
 **Team:** HammerLimbo Tech: Padmanabhan Rajendrakumar, Sharmila
 **Theme:** Sustainability & Social Impact
-**Live demo:** _added after the Cloud Run deployment_ · **Video:** _TBD_ · **Deck:** [deck/work/Timbul - AI Builder Cup.pptx](deck/work/)
+**Live demo:** _added after the Cloud Run deployment_ · **Video:** [youtu.be/vN8Nwi9wOWY](https://youtu.be/vN8Nwi9wOWY) · **Deck:** [deck/work/Timbul - AI Builder Cup.pptx](deck/work/)
 
 > Submission deadline: **18 Oct 2026**. Rules, themes and rubric are in [docs/HACKATHON_BRIEF.md](docs/HACKATHON_BRIEF.md). What the product is and who it is for is in [PRODUCT.md](PRODUCT.md). How to deploy it on Google Cloud is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
