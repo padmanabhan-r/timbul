@@ -183,7 +183,7 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
 
   return (
     <div className={`feed ${mode === "speaking" ? "speaking" : ""}`} onKeyDown={onKey}>
-      <TopBar fig={figLabel(saved)} title={lang === "id" ? fig.title_id : fig.title_en} lang={lang} setLang={setLang} />
+      <TopBar fig={figLabel(saved, lang)} title={lang === "id" ? fig.title_id : fig.title_en} lang={lang} setLang={setLang} />
       <div className="perf" aria-hidden="true" />
       <main className="explore">
         <section className="stage" aria-label="Figure">
@@ -198,10 +198,10 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
             <FigureView saved={saved} sheet={sheet} focusId={focusId} onPick={describe} showOriginal={showOriginal} lang={lang} />
           </div>
           <p className="hint" aria-hidden="true">
-            <span><kbd>← ↑ → ↓</kbd>move between parts</span>
-            <span><kbd>O</kbd>overview</span>
-            <span><kbd>M</kbd>ask by voice</span>
-            <span><kbd>Esc</kbd>stop speaking</span>
+            <span><kbd>← ↑ → ↓</kbd>{lang === "id" ? "pindah antarbagian" : "move between parts"}</span>
+            <span><kbd>O</kbd>{lang === "id" ? "gambaran umum" : "overview"}</span>
+            <span><kbd>M</kbd>{lang === "id" ? "tanya dengan suara" : "ask by voice"}</span>
+            <span><kbd>Esc</kbd>{lang === "id" ? "berhenti bicara" : "stop speaking"}</span>
           </p>
         </section>
 
@@ -239,21 +239,21 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
             <form className="ask-form" onSubmit={(e) => { e.preventDefault(); if (question.trim()) { send({ question: question.trim() }); setQuestion(""); } }}>
               <label className="sr-only" htmlFor="ask-input">Type a question</label>
               <input id="ask-input" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder={lang === "id" ? "Atau ketik pertanyaan…" : "Or type a question…"} autoComplete="off" />
-              <button className="btn on-ink-btn" type="submit" disabled={!question.trim() || mode === "thinking"}>Ask</button>
+              <button className="btn on-ink-btn" type="submit" disabled={!question.trim() || mode === "thinking"}>{lang === "id" ? "Tanya" : "Ask"}</button>
             </form>
           </div>
         </aside>
 
         <footer className="strip">
-          <Checks checks={sheet.checks} />
+          <Checks checks={sheet.checks} lang={lang} />
           <div className="actions">
             <button className="btn ghost" type="button" aria-pressed={showOriginal} onClick={() => setShowOriginal((v) => !v)}>
-              {showOriginal ? "Hide original" : "Show original"}
+              {showOriginal ? (lang === "id" ? "Sembunyikan asli" : "Hide original") : (lang === "id" ? "Tampilkan asli" : "Show original")}
             </button>
             {approved ? (
-              <button className="btn" type="button" onClick={download}>Print tactile sheet</button>
+              <button className="btn" type="button" onClick={download}>{lang === "id" ? "Cetak lembar timbul" : "Print tactile sheet"}</button>
             ) : (
-              <button className="btn" type="button" onClick={async () => { await saveFigure({ ...saved, approved: true }); setApproved(true); }}>Approve for printing</button>
+              <button className="btn" type="button" onClick={async () => { await saveFigure({ ...saved, approved: true }); setApproved(true); }}>{lang === "id" ? "Setujui untuk dicetak" : "Approve for printing"}</button>
             )}
           </div>
         </footer>
@@ -264,7 +264,8 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
   );
 }
 
-export function figLabel(saved: SavedFigure) {
+export function figLabel(saved: SavedFigure, lang: Lang = "en") {
+  if (lang === "id") return saved.sample ? "Contoh" : "Gbr.";
   return saved.sample ? "Sample" : "Fig.";
 }
 

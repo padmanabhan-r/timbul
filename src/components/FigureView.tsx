@@ -24,6 +24,11 @@ function FigureViewImpl({ saved, sheet, focusId, onPick, showOriginal, reveal = 
   const clipId = `feed-${saved.id}`;
   const focused = sheet.parts.find((p) => p.part.id === focusId);
   const drawArea = sheet.draw.w * sheet.draw.h;
+  // the printed key is braille in English; the ink beside it follows the language on screen
+  const keyName = (key: string, fallback: string) => {
+    const part = sheet.parts.find((p) => p.part.id === sheet.labels.find((l) => l.key === key)?.partId)?.part;
+    return part ? (lang === "id" ? part.name_id : part.name_en).toLowerCase() : fallback;
+  };
 
   return (
     <svg className={`figure-svg ${className || ""}`} viewBox={`0 0 ${sheet.w} ${sheet.h}`} role="img" aria-label={lang === "id" ? saved.figure.title_id : saved.figure.title_en}>
@@ -77,12 +82,12 @@ function FigureViewImpl({ saved, sheet, focusId, onPick, showOriginal, reveal = 
         {/* the sheet number in braille, and the raised orientation notch */}
         <g className="braille">{[...sheet.code.dots, ...sheet.notch].map((p, i) => <circle key={"c" + i} cx={p[0]} cy={p[1]} r={0.72} />)}</g>
         {ink && (
-          <text className="label-ink" x={sheet.code.x} y={sheet.code.y - 2.2}>{sheet.code.text}</text>
+          <text className="label-ink" x={sheet.code.x} y={sheet.code.y - 2.2}>{lang === "id" ? sheet.code.text.replace("sheet", "lembar") : sheet.code.text}</text>
         )}
         {sheet.keyList.map((k) => (
           <g key={"k" + k.key}>
             <g className="braille">{k.dots.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={0.72} />)}</g>
-            {ink && <text className="label-ink" x={k.x} y={k.y - 2.2}>{`${k.key}  ${k.text}`}</text>}
+            {ink && <text className="label-ink" x={k.x} y={k.y - 2.2}>{`${k.key}  ${keyName(k.key, k.text)}`}</text>}
           </g>
         ))}
       </g>

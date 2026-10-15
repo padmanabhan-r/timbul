@@ -31,15 +31,31 @@ export function TopBar({ title, fig, lang, setLang }: { title?: string; fig?: st
   );
 }
 
-export function Checks({ checks }: { checks: Check[] }) {
+const CHECK_ID: Record<string, string> = { spacing: "Jarak garis", labels: "Ukuran label", clutter: "Kepadatan", braille: "Braille" };
+const VALUE_ID: [RegExp, string][] = [
+  [/closest lines ([\d.]+) mm apart/, "garis terdekat berjarak $1 mm"],
+  [/some lines touch or cross/, "ada garis yang bersentuhan"],
+  [/some touch a line/, "ada yang menyentuh garis"],
+  [/(\d+) labels?/, "$1 label"],
+  [/(\d+) in the key/, "$1 di kunci"],
+  [/([\d.]+) mm clear/, "bebas $1 mm"],
+  [/(\d+) parts?/, "$1 bagian"],
+  [/(\d+)% raised/, "$1% timbul"],
+  [/(\d+) cells/, "$1 sel"],
+  [/no lines/, "tanpa garis"],
+];
+
+/** The four tactile checks, in the language the student or teacher has chosen. */
+export function Checks({ checks, lang = "en" }: { checks: Check[]; lang?: Lang }) {
+  const value = (v: string) => (lang === "id" ? VALUE_ID.reduce((s, [re, to]) => s.replace(re, to), v) : v);
   return (
-    <ul className="checks" aria-label="Tactile checks">
+    <ul className="checks" aria-label={lang === "id" ? "Pemeriksaan taktil" : "Tactile checks"}>
       {checks.map((c) => (
         <li className="check" key={c.id} title={c.rule}>
           <DotMark ok={c.pass} />
           <span>
-            <b>{c.name}</b>
-            <small>{c.pass ? c.value : `Check: ${c.value}`}</small>
+            <b>{lang === "id" ? CHECK_ID[c.id] : c.name}</b>
+            <small>{c.pass ? value(c.value) : `${lang === "id" ? "Periksa" : "Check"}: ${value(c.value)}`}</small>
           </span>
         </li>
       ))}
