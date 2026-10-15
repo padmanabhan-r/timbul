@@ -180,7 +180,8 @@ const FIGURE_SCHEMA = {
           name_id: { type: "STRING" },
           label: { type: "STRING", description: "The shortest clear English label for braille, one or two words, lowercase." },
           kind: { type: "STRING", enum: ["component", "region", "object"] },
-          shape: { type: "STRING", enum: ["rect", "ellipse", "polygon", "battery", "lamp", "switch_open", "switch_closed", "resistor", "cell"] },
+          shape: { type: "STRING", enum: ["rect", "ellipse", "polygon", "group", "battery", "lamp", "switch_open", "switch_closed", "resistor", "cell"] },
+          count: { type: "INTEGER", description: "For shape group only: how many identical items the group holds. 0 otherwise." },
           box_2d: BOX,
           outline: { type: "ARRAY", items: POINT, description: "For polygon only: 5 to 16 [y, x] points tracing the outline, normalised 0-1000 over the whole image. Empty otherwise." },
           detail_en: { type: "STRING", description: "One or two sentences: what this part is, what it does, and where it sits relative to its neighbours." },
@@ -215,6 +216,8 @@ Find the main diagram in the image and describe it as structured data.
 - Locate every part precisely with box_2d = [ymin, xmin, ymax, xmax], normalised 0-1000 over the whole image, tight around the part as drawn (not around its text label). A part drawn inside another part has its box inside that part's box.
 - Points in outlines and link paths are [y, x], normalised 0-1000 over the whole image.
 - Circuits: use the symbol shapes (battery, lamp, switch_open, switch_closed, resistor, cell) and give every wire as a link whose path follows the drawn route, corners included, from the edge of one part to the edge of the next.
+- Many identical items joined to many others (the nodes of a neural network's layers, the atoms of a lattice): do not give every item its own part or every line its own link, which would make a tangle no finger can follow. Make each layer or group one part with shape group, count = how many items it holds, and box_2d around all of them; join the groups with one arrow each, in the direction of flow. Say in the overview and in each group's detail how they connect, for example "every input node connects to every hidden node". Never draw only some of many connections: a partial set teaches the wrong structure.
+- A separate inset or second diagram beside the main one (a close-up, a legend, a colour key): keep it only if the whole figure still fits in 12 parts; otherwise leave it out and name it in left_out. Colour keys are always left out, because colour cannot be felt.
 - Organisms and rounded areas: ellipse. Irregular areas (land, water, regions on a map): polygon with an outline. Boxes and labelled blocks: rect.
 - Descriptions are for a student aged 10 to 15: plain words, spatial language (left of, above, inside), no colour words unless colour matters.
 - Bahasa Indonesia fields must be natural Indonesian, not word-for-word.
@@ -305,7 +308,9 @@ Compare the drawing with the page, part by part. Report only errors that would m
 - a part in the wrong place relative to its neighbours, wrong size, or outside the part it sits in (misplaced, and give the corrected box_2d over image 1 in moves);
 - a part with the wrong name (wrong_name, with the fix in renames);
 - a connection, wire or arrow missing or wrong (missing_link / wrong_link, with add_links / remove_links);
-- a part drawn that is not in the figure (extra_part, in remove_parts).
+- a part drawn that is not in the figure (extra_part, in remove_parts);
+- only some of many connections drawn as separate lines, which teaches the wrong structure (wrong_link): say so in the note.
+A group (a row of identical small circles standing for one layer of a network, say) joined to the next group by one arrow is a correct simplification, not an error.
 The drawing is deliberately simplified: dotted lines, symbols for circuit parts, braille instead of text, no shading, at most 12 parts, and the details listed in left_out are left out on purpose. None of that is an error.
 Spacing and braille rules are Timbul's own code's job, not yours: the results of its rule checks are below for context only, and are never a reason to remove a part.
 If the drawing is faithful, set matches to true and leave every list empty. Do not invent problems.`;

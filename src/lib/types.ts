@@ -1,6 +1,6 @@
 export type Lang = "en" | "id";
 
-export type Shape = "rect" | "ellipse" | "polygon" | "battery" | "lamp" | "switch_open" | "switch_closed" | "resistor" | "cell";
+export type Shape = "rect" | "ellipse" | "polygon" | "group" | "battery" | "lamp" | "switch_open" | "switch_closed" | "resistor" | "cell";
 
 export interface Part {
   id: string;
@@ -11,6 +11,8 @@ export interface Part {
   shape: Shape;
   box: [number, number, number, number];
   outline?: [number, number][];
+  /** For a group: how many identical items it holds (the nodes of one neural-network layer, say). */
+  count?: number;
   detail_en: string;
   detail_id: string;
 }

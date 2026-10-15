@@ -222,13 +222,14 @@ function layout(saved: SavedFigure, aspect: number, withKey: boolean, notesIn: s
     if (isSymbol(p.shape)) sp.dots = symbol(p.shape, sp.box).flatMap((seg) => along(seg));
     else if (p.shape === "ellipse") sp.dots = along(ellipsePoints((x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2), LINE.gap, true);
     else if (p.shape === "polygon" && p.outline && p.outline.length > 2) sp.dots = along(p.outline.map(([x, y]) => [X(x), Y(y)] as P), LINE.gap, true);
+    else if (p.shape === "group") sp.dots = groupDots(sp.box, p.count || 3);
     else sp.dots = along(rectPoints(x0, y0, x1, y1), LINE.gap, true);
   }
 
   // Textures for the innermost areas, so neighbouring areas feel different.
   let tex = 0;
   for (const sp of kept) {
-    if (isSymbol(sp.part.shape) || sp.part.kind === "component") continue;
+    if (isSymbol(sp.part.shape) || sp.part.kind === "component" || sp.part.shape === "group") continue;
     const holdsOthers = kept.some((o) => o !== sp && contains(sp.box, o.box));
     const share = ((sp.box[2] - sp.box[0]) * (sp.box[3] - sp.box[1])) / (draw.w * draw.h);
     if (holdsOthers || share > 0.35 || share < 0.004) continue;
@@ -394,6 +395,26 @@ function occlude(parts: SheetPart[], links: { link: Link; dots: P[] }[], X: (v: 
     const fronts = parts.filter((o) => o !== sp && area2(o.box) < area2(sp.box) && overlaps(o.box, sp.box));
     sp.fill = sp.fill.filter((p) => !fronts.some((o) => inside(o.part, o.box, outlineOf(o), p, -MIN_GAP)) && !near(p, allLines, MIN_GAP));
   }
+}
+
+/**
+ * A group of identical items, such as the nodes of one neural-network layer: that many small circles in a row
+ * along the group's longer side, each far enough from the next to be felt as separate.
+ */
+function groupDots([x0, y0, x1, y1]: number[], count: number): P[] {
+  const n = Math.max(1, Math.min(12, Math.round(count)));
+  const tall = y1 - y0 >= x1 - x0;
+  const long = tall ? y1 - y0 : x1 - x0, short = tall ? x1 - x0 : y1 - y0;
+  const r = Math.max(2.2, Math.min(short / 2, (long / n - MIN_GAP - LINE.r * 2) / 2));
+  const dots: P[] = [];
+  // the box is drawn tight around the items, so the first and last sit flush with its ends
+  const start = Math.min(short, long / n) / 2;
+  for (let i = 0; i < n; i++) {
+    const along1 = n > 1 ? start + (i * (long - start * 2)) / (n - 1) : long / 2;
+    const cx = tall ? (x0 + x1) / 2 : x0 + along1, cy = tall ? y0 + along1 : (y0 + y1) / 2;
+    dots.push(...along(ellipsePoints(cx, cy, r, r), LINE.gap, true));
+  }
+  return dots;
 }
 
 function area2(b: number[]) {
