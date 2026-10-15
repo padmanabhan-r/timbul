@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Lang, SavedFigure } from "../lib/types";
-import { listFigures } from "../lib/store";
+import { listFigures, currentClass, setClass } from "../lib/store";
 import { SAMPLES } from "../samples";
 import { buildSheet } from "../lib/tactile";
 import { FigureView } from "../components/FigureView";
@@ -34,6 +34,14 @@ export function Library({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
   const [status, setStatus] = useState("");
   const [typed, setTyped] = useState("");
   const rec = useRef<Recording | null>(null);
+  const [cls, setCls] = useState(currentClass());
+  const [clsDraft, setClsDraft] = useState(cls);
+  const changeClass = (code: string) => {
+    const next = setClass(code);
+    setCls(next);
+    setClsDraft(next);
+    listFigures().then(setFigures);
+  };
 
   const open = (n: number, heard?: string) => {
     const f = figures.find((x) => x.number === n);
@@ -94,6 +102,12 @@ export function Library({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
             <button className="btn" type="submit" disabled={!typed}>Open</button>
           </form>
           <p className="open-status" aria-live="assertive">{status}</p>
+          <form className="class-code" onSubmit={(e) => { e.preventDefault(); changeClass(clsDraft); }}>
+            <label htmlFor="class-code">Class library</label>
+            <input id="class-code" value={clsDraft} onChange={(e) => setClsDraft(e.target.value)} autoCapitalize="none" spellCheck={false} />
+            {clsDraft !== cls && <button className="btn ghost" type="submit">Switch</button>}
+            <small>Everyone with this code shares the same numbered sheets.</small>
+          </form>
         </section>
         <ul className="sheets" aria-label="Figures">
           {figures.map((f) => <Card key={f.id} saved={f} lang={lang} />)}

@@ -1,4 +1,4 @@
-import type { Figure, Finding, Lang } from "./types";
+import type { Figure, Finding, Lang, SavedFigure } from "./types";
 
 // The browser talks to /api, which holds the Gemini key. Locally that is the Vite dev server.
 
@@ -51,4 +51,14 @@ export function ask(figure: Figure, lang: Lang, input: { question?: string; audi
 
 export function hearSheet(input: { audio?: string; audioMime?: string; text?: string }) {
   return post<{ heard: string; number: number }>("/api/sheet", { audioBase64: input.audio, audioMime: input.audioMime, text: input.text });
+}
+
+export async function listLibrary(cls: string): Promise<SavedFigure[]> {
+  const res = await fetch(`/api/library?class=${encodeURIComponent(cls)}`);
+  if (!res.ok) throw new ApiError("Could not load the class library.", "library", res.status);
+  return (await res.json()).sheets as SavedFigure[];
+}
+
+export function saveToLibrary(cls: string, sheet: SavedFigure) {
+  return post<SavedFigure>("/api/library", { class: cls, sheet });
 }

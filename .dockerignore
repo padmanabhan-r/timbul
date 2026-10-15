@@ -1,0 +1,13 @@
+node_modules
+dist
+.cache
+.env
+.env.*
+!.env.example
+video
+deck
+.git
+.remember
+.impeccable
+.claude
+*.pptx

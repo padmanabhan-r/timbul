@@ -10,6 +10,7 @@
     "samples": "node scripts/make-samples.mjs"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^9.3.1",
     "idb-keyval": "^6.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

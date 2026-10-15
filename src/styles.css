@@ -221,6 +221,11 @@ a { color: inherit; }
 .open-typed input { width: 140px; min-height: 52px; border-radius: 999px; border: 3px solid var(--yellow); background: var(--ink); color: var(--yellow); padding: 6px 20px; font-size: 24px; font-weight: 800; }
 .open-typed .btn { background: var(--yellow); color: var(--ink); border-color: var(--yellow); }
 .open-status { grid-column: 1 / -1; margin: 0; min-height: 1.2em; font-weight: 700; }
+.class-code { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; border-top: 2px dotted var(--yellow); padding-top: 14px; }
+.class-code label { font-weight: 800; }
+.class-code input { width: 160px; min-height: 40px; border-radius: 999px; border: 2px solid var(--yellow); background: var(--ink); color: var(--yellow); padding: 4px 16px; font-size: 18px; font-weight: 800; }
+.class-code .btn { background: var(--yellow); color: var(--ink); border-color: var(--yellow); min-height: 40px; }
+.class-code small { width: 100%; opacity: 0.8; font-weight: 600; }
 @media (max-width: 900px) { .open-sheet { grid-template-columns: 1fr; } }
 
 /* ---------- add a page ---------- */

@@ -426,7 +426,7 @@ export async function hearSheet(key, { audioBase64, audioMime, text }) {
 
 // Every spoken line is cached on disk by its words, voice and language, so a part's description is
 // generated once and replayed for free after that.
-const SPEECH_CACHE = resolve(process.cwd(), ".cache/speech");
+const SPEECH_CACHE = process.env.TIMBUL_CACHE_DIR || (process.env.VERCEL ? "/tmp/timbul-speech" : resolve(process.cwd(), ".cache/speech"));
 
 /** Gemini's speech can arrive at full scale and sounds harsh: bring the loudest sample to about -4 dBFS. */
 function level(pcm) {
@@ -482,9 +482,13 @@ export async function speakText(key, text, lang = "en") {
     if (!part) { last = new GeminiError("No audio in the answer", 502, "other"); continue; }
     const rate = Number(/rate=(\d+)/.exec(part.inlineData.mimeType || "")?.[1] || 24000);
     const audio = wav(Buffer.from(part.inlineData.data, "base64"), rate);
-    mkdirSync(SPEECH_CACHE, { recursive: true });
-    writeFileSync(file, audio);
-    writeFileSync(file.replace(/\.wav$/, ".json"), JSON.stringify({ text, lang, voice: VOICE, model }, null, 1));
+    try {
+      mkdirSync(SPEECH_CACHE, { recursive: true });
+      writeFileSync(file, audio);
+      writeFileSync(file.replace(/\.wav$/, ".json"), JSON.stringify({ text, lang, voice: VOICE, model }, null, 1));
+    } catch {
+      // a read-only disk only means the line is generated again next time
+    }
     return { audio, cached: false, file, model };
   }
   throw last;

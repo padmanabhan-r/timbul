@@ -45,3 +45,6 @@ firebase-debug.log*
 
 # Spoken lines cached by the local server
 .cache/
+
+# Vercel
+.vercel/

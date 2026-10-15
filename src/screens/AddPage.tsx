@@ -141,9 +141,9 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
       setDraft(base);
       setStep("checking");
       const checked = await selfCheck(base, shot.base64);
-      await saveFigure(checked);
+      const stored = await saveFigure(checked);
       setDraft(null);
-      setSaved(checked);
+      setSaved(stored);
       setStep("drawing");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Something went wrong. Try again.");
@@ -179,9 +179,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
 
   const approve = async () => {
     if (!saved) return;
-    const next = { ...saved, approved: true };
-    await saveFigure(next);
-    setSaved(next);
+    setSaved(await saveFigure({ ...saved, approved: true }));
   };
 
   const onFiles = (files: FileList | null) => files?.[0] && start(files[0]);
