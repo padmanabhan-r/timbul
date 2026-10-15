@@ -16,10 +16,10 @@ export const MODELS = {
 };
 export const VOICE = process.env.TIMBUL_VOICE || "Sulafat";
 
-// The same Gemini models through OpenRouter. By default they answer first (the team's choice: Google's
-// free tier is too small and too often busy), and Google's own Gemini API is the fallback.
-// TIMBUL_PROVIDER=google puts Google first. Speech always uses Google's Gemini TTS.
-export const PRIMARY = (process.env.TIMBUL_PROVIDER || "openrouter").toLowerCase();
+// Google's own Gemini API answers first; the same Gemini models through OpenRouter are the backup when
+// Google's free allowance runs out or a model is busy. TIMBUL_PROVIDER=openrouter puts OpenRouter first.
+// Speech always uses Google's Gemini TTS.
+export const PRIMARY = (process.env.TIMBUL_PROVIDER || "google").toLowerCase();
 export const FALLBACK = {
   read: (process.env.TIMBUL_READ_FALLBACK || "google/gemini-3.8-flash,google/gemini-3.5-flash").split(","),
   ask: (process.env.TIMBUL_ASK_FALLBACK || "google/gemini-3.5-flash-lite,google/gemini-3.5-flash").split(","),
