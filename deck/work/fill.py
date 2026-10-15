@@ -118,9 +118,11 @@ fill = {"Team name": "HammerLimbo Tech", "Team leader name": "Padmanabhan Rajend
 for p in tb.paragraphs:
     for key, val in fill.items():
         if p.runs and p.text.strip().startswith(key):
+            # insert after the label's run, not at the paragraph's end: a run after <a:endParaRPr>
+            # is invalid, and PowerPoint silently drops it (LibreOffice still shows it)
             base = p.runs[-1]
             r = copy.deepcopy(base._r)
-            p._p.append(r)
+            base._r.addnext(r)
             new = p.runs[-1]
             new.text = " " + val
             new.font.bold = False
@@ -167,7 +169,7 @@ for big, lab, src in stats:
 s = S[4]
 feats = [
     ("Find, zoom, read", "Gemini finds the figure on the page, Timbul crops to it, and Gemini reads the close-up: parts, positions, links."),
-    ("Gemini checks its work", "Gemini lays its drawing over the page and corrects what is out of place. Tested: it caught a part we moved and put it back."),
+    ("Gemini checks itself", "Gemini lays its drawing over the page and corrects what is out of place. Tested: it caught a part we moved and put it back."),
     ("Raised-dot drawing", "Every line as dots at true size, braille labels and key; many repeated items drawn as groups, not a tangle."),
     ("Four rule checks", "Lines 3 mm apart, braille clear of lines, at most 12 parts, every label in braille; crossings and near-misses fixed."),
     ("Teacher approves", "Nothing prints until a teacher compares it with the original. Print-ready A4 SVG, numbered in braille."),
@@ -300,7 +302,7 @@ for p in tb.text_frame.paragraphs:
     for key, val in links.items():
         if p.text.strip().startswith(key):
             r = copy.deepcopy(p.runs[-1]._r)
-            p._p.append(r)
+            p.runs[-1]._r.addnext(r)
             p.runs[-1].text = ": " + val
             p.runs[-1].font.bold = True
 
