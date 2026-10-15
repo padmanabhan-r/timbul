@@ -171,8 +171,8 @@ feats = [
     ("Raised-dot drawing", "Every line as dots at true size, braille labels and key; many repeated items drawn as groups, not a tangle."),
     ("Four rule checks", "Lines 3 mm apart, braille clear of lines, at most 12 parts, every label in braille; crossings and near-misses fixed."),
     ("Teacher approves", "Nothing prints until a teacher compares it with the original. Print-ready A4 SVG, numbered in braille."),
-    ("Class library", "Approved sheets are numbered and shared by class code (Firestore), so a sheet made on a laptop opens on a phone."),
-    ("Open by voice", "The student says “sheet two”; Timbul opens it and announces it."),
+    ("Class library", "Approved sheets are numbered and shared by class code (Firestore). The student says “sheet two” to open one on any device."),
+    ("Point and ask", "The phone camera above the printed sheet: she touches a shape and asks “what is this?”; Gemini finds the fingertip and Timbul names the part."),
     ("Explore and ask", "An overview, part by part with keys, and any question by voice, in English or Bahasa Indonesia; answers spoken."),
 ]
 for i, (h, d) in enumerate(feats):
@@ -188,7 +188,7 @@ s = S[5]
 text(s, 0.35, 1.25, 1.2, 0.3, [[("TEACHER", {"bold": True, "size": 10})]])
 text(s, 0.35, 3.3, 1.2, 0.3, [[("STUDENT", {"bold": True, "size": 10})]])
 lane1 = [("Photograph the page", WHITE), ("Gemini finds and reads it", YEL), ("Gemini checks its drawing", YEL), ("Code draws, rules pass", WHITE), ("Teacher approves, prints", WHITE)]
-lane2 = [("Feels the sheet", WHITE), ("Says the sheet number", WHITE), ("Timbul opens and announces it", WHITE), ("Explores and asks by voice", WHITE), ("Gemini answers, spoken", YEL)]
+lane2 = [("Feels the sheet", WHITE), ("Says the sheet number", WHITE), ("Explores part by part", WHITE), ("Points: “what is this?”", YEL), ("Asks; Gemini answers, spoken", YEL)]
 for lane, y in ((lane1, 1.6), (lane2, 3.65)):
     for i, (t, f) in enumerate(lane):
         x = 0.35 + i * 1.9
@@ -216,7 +216,7 @@ def node(x, y, w, h, title, sub, f=WHITE):
 node(0.35, 1.45, 2.0, 1.2, "Browser", "Teacher's laptop or phone; student's phone or laptop with a screen reader. React web app.")
 node(2.85, 1.45, 2.0, 1.2, "Firebase Hosting", "Serves the web app over HTTPS.", YEL)
 node(5.35, 1.45, 2.1, 1.2, "Cloud Run service", "One container: the app and the API (/locate, /read, /verify, /ask, /speak, /sheet, /library). Spending guard.", YEL)
-node(7.85, 1.15, 1.8, 0.95, "Gemini 3.8 Flash", "Reads the figure, then checks its own drawing against the page.")
+node(7.85, 1.15, 1.8, 0.95, "Gemini 3.8 Flash", "Reads the figure, checks its own drawing, finds the fingertip on the sheet.")
 node(7.85, 2.2, 1.8, 0.95, "Gemini 3.5 Flash-Lite", "Finds the figure; hears questions and sheet numbers; answers.")
 node(7.85, 3.25, 1.8, 0.95, "Gemini 3.8 Flash TTS", "Speaks every answer and part name.")
 node(2.85, 3.3, 2.0, 1.05, "Firestore", "The class library: approved sheets, their numbers, shared across devices.", YEL)
@@ -229,7 +229,7 @@ text(s, 0.35, 4.55, 9.3, 0.8, ["Gemini is called through Google's Gemini API, tr
 # ---------------------------------------------------------------- slide 9: technologies
 s = S[8]
 cols = [
-    ("Google AI", ["Gemini 3.8 Flash: reads figures into structured JSON and checks its own drawing (vision, two images)", "Gemini 3.5 Flash-Lite: finds the figure; spoken questions and sheet numbers (audio in)", "Gemini 3.8 Flash TTS: Timbul's voice", "Fallbacks: Gemini 3.7, 3.6 and 3.5 Flash"]),
+    ("Google AI", ["Gemini 3.8 Flash: reads figures into structured JSON, checks its own drawing, and finds a fingertip on the printed sheet (vision, two images)", "Gemini 3.5 Flash-Lite: finds the figure; spoken questions and sheet numbers (audio in)", "Gemini 3.8 Flash TTS: Timbul's voice", "Fallbacks: Gemini 3.7, 3.6 and 3.5 Flash"]),
     ("Google Cloud", ["Cloud Run: the app and its API", "Firestore: the class library", "Secret Manager: the keys", "Cloud Build and Artifact Registry", "Firebase Hosting: the short address"]),
     ("Our own code", ["Tactile layout engine: dots, occlusion, label placement", "Uncontracted braille in standard 6 mm cells", "Four rule checks with automatic fixes", "A4 SVG export at real millimetres"]),
     ("App", ["React, TypeScript, Vite", "Web Audio microphone capture", "IndexedDB copy for offline use", "Screen-reader labels, keyboard use"]),
@@ -265,23 +265,24 @@ text(s, 5.1, 4.05, 4.55, 0.5, ["The same figure in Bahasa Indonesia: a spoken qu
 
 # ---------------------------------------------------------------- slide 12: performance
 s = S[11]
-perf = [("about 30 s", "from a photo of a textbook page to a checked sheet: find the figure 1 to 2 s, read 10 to 26 s, self-check 10 to 35 s (Gemini 3.8 Flash)"),
+perf = [("4 of 4", "Point and ask photos answered correctly: two parts, the same photo upside down, and no finger (7 to 21 s each; test photos were generated, not a real printed sheet)"),
+        ("about 30 s", "from a photo of a textbook page to a checked sheet: find the figure 1 to 2 s, read 10 to 26 s, self-check 10 to 35 s (Gemini 3.8 Flash)"),
         ("1 round", "for the self-check to catch a part we moved on purpose (the nucleus) and put it back; the second round confirmed the fix"),
         ("4 of 4", "checks passed by the plant cell page (closest lines 3.1 mm against a 3 mm rule) and by a neural-network diagram after grouping"),
-        ("2 to 7 s", "from the end of a spoken question to Gemini's answer; replaying a cached spoken line takes no time")]
+        ]
 for i, (big, lab) in enumerate(perf):
     x = 0.35 + (i % 2) * 4.7
     y = 1.35 + (i // 2) * 1.35
     box(s, x, y, 4.5, 1.2, fill=YEL)
     text(s, x + 0.15, y + 0.08, 4.2, 0.5, [[(big, {"bold": True, "size": 22})]])
     text(s, x + 0.15, y + 0.6, 4.2, 0.6, [lab], size=10)
-text(s, 0.35, 4.15, 9.3, 1.2, [[("How we measured: ", {"bold": True}), ("our own runs on 14 and 15 October 2026: a textbook page with an openly licensed plant cell figure, a series circuit, a neural-network diagram and the USGS water cycle, using scripts/check-reading.mjs in the repository.", {})],
+text(s, 0.35, 4.15, 9.3, 1.2, [[("How we measured: ", {"bold": True}), ("our own runs on 14 and 15 October 2026: a textbook page with an openly licensed plant cell figure, a series circuit, a neural-network diagram and the USGS water cycle, using scripts/check-reading.mjs and scripts/check-point.mjs in the repository.", {})],
                                 [("Honest limits: ", {"bold": True}), ("busy scenes are the weak spot: the water cycle now passes all four checks, but its landscape comes out as large boxy regions. Some key letters sit outside their part when no clear spot is inside. No blind student or teacher has tested Timbul yet, and no sheet has been printed on swell paper yet.", {})]], size=10.5)
 
 # ---------------------------------------------------------------- slide 13: future
 s = S[12]
-fut = [("Point and ask", "A phone above the sheet: the student touches a raised shape and asks “what is this?”; Gemini finds the fingertip and Timbul names the part under it."),
-       ("Phone view for screen readers", "Swipe through parts with VoiceOver or TalkBack, one large Ask button, everything usable with the screen off."),
+fut = [("Point and ask on real sheets", "It works on photos today; next, a phone stand and tests with printed swell-paper sheets and real fingers, then live video instead of a photo."),
+       ("A phone screen built for screen readers", "VoiceOver and TalkBack can already swipe through every part; next, a one-button screen for asking and pointing, usable with the screen off."),
        ("Test with real users", "Sessions with blind students and their teachers at special schools in Indonesia and India, then fix what they find."),
        ("More languages and contracted braille", "Tamil, Thai and Vietnamese next; contracted braille through a standard braille library."),
        ("Shared across schools", "Class libraries already share sheets within a class; next, a national library so each textbook figure is made once for every school, with lead lines for labels.")]

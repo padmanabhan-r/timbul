@@ -40,12 +40,13 @@ It installs dependencies on the first run, starts the app on http://localhost:51
    - On the home screen, the student says "sheet two", or types the number.
    - Click a part, use the arrow keys, or on a phone swipe through the parts list with VoiceOver or TalkBack. Each part is spoken.
    - **O** gives the overview. **M** or the microphone asks a question by voice; the answer is spoken.
+   - **Point and ask (P).** The phone's camera looks down at the printed sheet. The student touches a raised shape and asks "what is this?". Gemini lines the photo up with Timbul's drawing of the sheet, finds the fingertip, and Timbul names the part. Test it with `node scripts/check-point.mjs <photo>`.
    - Everything works in English and Bahasa Indonesia.
 
 ## Stack
 
 - **Gemini models** (Google's Gemini API, OpenRouter as backup):
-  - `gemini-3.8-flash` reads figures and checks drawings;
+  - `gemini-3.8-flash` reads figures, checks drawings and finds the fingertip for Point and ask;
   - `gemini-3.5-flash-lite` finds figures, hears questions and sheet numbers;
   - `gemini-3.8-flash-tts` (voice Sulafat) speaks, cached so each line is made once.
   - Each call tries further Gemini models when one is busy, with timeouts.
