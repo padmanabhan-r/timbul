@@ -12,7 +12,7 @@ const KEY_NAMES = ["GEMINI_API_KEY", "GOOGLE_API_KEY", "GOOGLE_GENERATIVE_AI_API
 export const MODELS = {
   read: (process.env.TIMBUL_READ_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash,gemini-3-flash-preview,gemini-2.5-flash").split(","),
   ask: (process.env.TIMBUL_ASK_MODEL || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash").split(","),
-  speak: (process.env.TIMBUL_SPEAK_MODEL || "gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview").split(","),
+  speak: (process.env.TIMBUL_SPEAK_MODEL || "gemini-3.8-flash-tts,gemini-3.8-flash-lite-tts,gemini-3.1-flash-tts-preview,gemini-2.5-flash-preview-tts").split(","),
 };
 export const VOICE = process.env.TIMBUL_VOICE || "Sulafat";
 
