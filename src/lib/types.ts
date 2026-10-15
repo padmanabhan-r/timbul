@@ -49,6 +49,25 @@ export interface SavedFigure {
   imageW: number;
   imageH: number;
   figure: Figure;
+  /** Gemini's check of its own drawing against the page, before the teacher approves it. */
+  review?: Review;
+  /** The teacher has looked at the sheet beside the original and approved it for printing. */
+  approved?: boolean;
   /** Where a sample came from, for attribution. */
   source?: string;
+}
+
+export interface Finding {
+  kind: "missing_part" | "misplaced" | "wrong_name" | "missing_link" | "wrong_link" | "extra_part";
+  part: string;
+  note_en: string;
+}
+
+export interface Review {
+  /** How many times Gemini compared the drawing with the page. */
+  rounds: number;
+  /** What it found and corrected, across all rounds. */
+  findings: Finding[];
+  /** Whether the last comparison found nothing left to fix. */
+  matches: boolean;
 }

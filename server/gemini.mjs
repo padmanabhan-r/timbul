@@ -101,7 +101,7 @@ function jsonSchema(s) {
   return out;
 }
 
-async function openrouter(model, parts, schema, temperature) {
+async function openrouter(model, parts, schema, temperature, effort = "low") {
   const key = loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]);
   if (!key) throw new GeminiError("No OpenRouter key", 401, "key");
   const content = parts.map((p) => {
@@ -116,7 +116,7 @@ async function openrouter(model, parts, schema, temperature) {
     body: JSON.stringify({
       model, temperature, messages: [{ role: "user", content }],
       response_format: { type: "json_schema", json_schema: { name: "answer", strict: false, schema: jsonSchema(schema) } },
-      reasoning: { effort: "low" },
+      reasoning: { effort },
     }),
   });
   const body = await res.text();
@@ -127,14 +127,14 @@ async function openrouter(model, parts, schema, temperature) {
 }
 
 /** Tries each model in turn; moves on when one is busy (503) or its free allowance is used up (429). */
-async function generateAny(key, models, parts, schema, temperature, fallback = []) {
+async function generateAny(key, models, parts, schema, temperature, fallback = [], effort = "low") {
   let last;
   const routed = fallback.map((m) => "openrouter:" + m);
   const order = !fallback.length ? models : PRIMARY === "openrouter" && loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]) ? [...routed, ...models] : [...models, ...routed];
   for (const model of order) {
     if (model.startsWith("openrouter:")) {
       try {
-        return { result: await openrouter(model.slice(11), parts, schema, temperature), model };
+        return { result: await openrouter(model.slice(11), parts, schema, temperature, effort), model };
       } catch (e) {
         last = e;
         console.warn(`[timbul] ${model} failed (${e.status}); trying the next model`);
@@ -225,17 +225,151 @@ function normalise(raw) {
   const pt = (p) => [clamp(p?.[1]), clamp(p?.[0])];
   const parts = (raw.parts || []).map(({ box_2d, outline, ...p }) => ({ ...p, box: box(box_2d), outline: (outline || []).map(pt) }));
   const links = (raw.links || []).map((l) => ({ ...l, path: (l.path || []).map(pt) }));
+  return { ...raw, figure_box: extent(parts, links), parts, links, coords: "image" };
+}
+
+/** The area of the page the figure covers, with a small margin. */
+function extent(parts, links) {
   const xs = [], ys = [];
   for (const p of parts) xs.push(p.box[0], p.box[2]), ys.push(p.box[1], p.box[3]);
   for (const l of links) for (const [x, y] of l.path) xs.push(x), ys.push(y);
   const pad = 8;
-  const figure_box = xs.length ? [Math.max(0, Math.min(...xs) - pad), Math.max(0, Math.min(...ys) - pad), Math.min(1000, Math.max(...xs) + pad), Math.min(1000, Math.max(...ys) + pad)] : [0, 0, 1000, 1000];
-  return { ...raw, figure_box, parts, links, coords: "image" };
+  return xs.length ? [Math.max(0, Math.min(...xs) - pad), Math.max(0, Math.min(...ys) - pad), Math.min(1000, Math.max(...xs) + pad), Math.min(1000, Math.max(...ys) + pad)] : [0, 0, 1000, 1000];
 }
 
 export async function readFigure(key, imageBase64, mimeType) {
   const { result, model } = await generateAny(key, MODELS.read, [{ inlineData: { mimeType, data: imageBase64 } }, { text: READ_PROMPT }], FIGURE_SCHEMA, 0.1, FALLBACK.read);
   return { ...normalise(result), model };
+}
+
+// ---------------------------------------------------------------- finding the figure on the page
+
+const LOCATE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    found: { type: "BOOLEAN" },
+    box_2d: { ...BOX, description: "[ymin, xmin, ymax, xmax] around the main diagram and its labels, normalised 0-1000. Leave out the page's running text and caption." },
+  },
+  required: ["found", "box_2d"],
+};
+
+/** A quick first look: where on the page the figure is, so the full reading can work on a close-up of it. */
+export async function locateFigure(key, { image, mime }) {
+  const prompt = "Find the main diagram or figure on this textbook page. Return a box around the diagram itself with its labels, without the page's paragraphs or the caption. If there is no figure, set found to false.";
+  const { result, model } = await generateAny(key, MODELS.ask, [{ inlineData: { mimeType: mime || "image/jpeg", data: image } }, { text: prompt }], LOCATE_SCHEMA, 0, FALLBACK.ask);
+  const b = result.box_2d || [];
+  const clamp = (v) => Math.max(0, Math.min(1000, Number(v) || 0));
+  const box = b.length === 4 ? [clamp(Math.min(b[1], b[3])), clamp(Math.min(b[0], b[2])), clamp(Math.max(b[1], b[3])), clamp(Math.max(b[0], b[2]))] : [0, 0, 1000, 1000];
+  return { found: Boolean(result.found), box, model };
+}
+
+// ---------------------------------------------------------------- checking the drawing against the page
+
+const PART_ITEM = FIGURE_SCHEMA.properties.parts.items;
+const LINK_ITEM = FIGURE_SCHEMA.properties.links.items;
+
+const VERIFY_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    matches: { type: "BOOLEAN", description: "True when the tactile drawing tells a blind student the same thing as the figure on the page." },
+    findings: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          kind: { type: "STRING", enum: ["missing_part", "misplaced", "wrong_name", "missing_link", "wrong_link", "extra_part"] },
+          part: { type: "STRING", description: "The id of the part concerned, or the new id for a missing part." },
+          note_en: { type: "STRING", description: "One short sentence a teacher reads: what was wrong and what was changed." },
+        },
+        required: ["kind", "part", "note_en"],
+      },
+    },
+    moves: { type: "ARRAY", items: { type: "OBJECT", properties: { id: { type: "STRING" }, box_2d: BOX }, required: ["id", "box_2d"] } },
+    renames: { type: "ARRAY", items: { type: "OBJECT", properties: { id: { type: "STRING" }, name_en: { type: "STRING" }, name_id: { type: "STRING" }, label: { type: "STRING" } }, required: ["id", "name_en", "name_id", "label"] } },
+    add_parts: { type: "ARRAY", items: PART_ITEM },
+    remove_parts: { type: "ARRAY", items: { type: "STRING" } },
+    add_links: { type: "ARRAY", items: LINK_ITEM },
+    remove_links: { type: "ARRAY", items: { type: "OBJECT", properties: { from: { type: "STRING" }, to: { type: "STRING" } }, required: ["from", "to"] } },
+  },
+  required: ["matches", "findings", "moves", "renames", "add_parts", "remove_parts", "add_links", "remove_links"],
+};
+
+const VERIFY_PROMPT = `You are checking a tactile graphic before it is printed for a blind student.
+Image 1 is the figure from the textbook page. Image 2 is the tactile drawing made from an earlier reading of it, laid over a faded copy of image 1: every line of the drawing is a row of black dots, and each part carries its id in small grey text. Every dotted outline should sit on the part of the figure it stands for; one that sits somewhere else, or is the wrong size, is misplaced.
+The reading it was drawn from is below, with boxes as [ymin, xmin, ymax, xmax] normalised 0-1000 over image 1.
+
+Compare the drawing with the page, part by part. Report only errors that would mislead a student who reads by touch:
+- a main part of the figure that is missing from the drawing (missing_part, and give it in add_parts with box_2d over image 1);
+- a part in the wrong place relative to its neighbours, wrong size, or outside the part it sits in (misplaced, and give the corrected box_2d over image 1 in moves);
+- a part with the wrong name (wrong_name, with the fix in renames);
+- a connection, wire or arrow missing or wrong (missing_link / wrong_link, with add_links / remove_links);
+- a part drawn that is not in the figure (extra_part, in remove_parts).
+The drawing is deliberately simplified: dotted lines, symbols for circuit parts, braille instead of text, no shading, at most 12 parts, and the details listed in left_out are left out on purpose. None of that is an error.
+Spacing and braille rules are Timbul's own code's job, not yours: the results of its rule checks are below for context only, and are never a reason to remove a part.
+If the drawing is faithful, set matches to true and leave every list empty. Do not invent problems.`;
+
+/** Gemini looks at the page and at its own drawing side by side, and corrects the reading where they disagree. */
+export async function verifyFigure(key, { image, mime, drawing, figure, checks = [] }) {
+  const native = (b) => [b[1], b[0], b[3], b[2]];
+  const reading = {
+    title: figure.title_en,
+    left_out: figure.left_out,
+    parts: figure.parts.map((p) => ({ id: p.id, name: p.name_en, shape: p.shape, box_2d: native(p.box) })),
+    links: figure.links.map((l) => ({ from: l.from, to: l.to, kind: l.kind })),
+  };
+  const parts = [
+    { inlineData: { mimeType: mime || "image/jpeg", data: image } },
+    { inlineData: { mimeType: "image/png", data: drawing } },
+    { text: `${VERIFY_PROMPT}\n\nThe reading:\n${JSON.stringify(reading)}\n\nThe rule checks:\n${checks.map((c) => `- ${c.name}: ${c.pass ? "pass" : "FAIL"} (${c.value})`).join("\n") || "- not run"}` },
+  ];
+  const { result, model } = await generateAny(key, MODELS.read, parts, VERIFY_SCHEMA, 0.1, FALLBACK.read);
+  return { ...applyReview(figure, result), model };
+}
+
+function applyReview(figure, r) {
+  const clamp = (v) => Math.max(0, Math.min(1000, Number(v) || 0));
+  const box = (b) => [clamp(Math.min(b[1], b[3])), clamp(Math.min(b[0], b[2])), clamp(Math.max(b[1], b[3])), clamp(Math.max(b[0], b[2]))];
+  const pt = (p) => [clamp(p?.[1]), clamp(p?.[0])];
+  let parts = figure.parts.map((p) => ({ ...p }));
+  let links = figure.links.map((l) => ({ ...l }));
+  let changed = 0;
+  const gone = new Set(r.remove_parts || []);
+  if (gone.size) { parts = parts.filter((p) => !gone.has(p.id)); links = links.filter((l) => !gone.has(l.from) && !gone.has(l.to)); changed++; }
+  for (const m of r.moves || []) {
+    const p = parts.find((q) => q.id === m.id);
+    if (p && Array.isArray(m.box_2d) && m.box_2d.length === 4) {
+      const next = box(m.box_2d);
+      // an outline moves with its box
+      if (p.outline?.length) {
+        const [a0, b0, a1, b1] = p.box, [c0, d0, c1, d1] = next;
+        const sx = (c1 - c0) / Math.max(1, a1 - a0), sy = (d1 - d0) / Math.max(1, b1 - b0);
+        p.outline = p.outline.map(([x, y]) => [c0 + (x - a0) * sx, d0 + (y - b0) * sy]);
+      }
+      p.box = next;
+      changed++;
+    }
+  }
+  for (const n of r.renames || []) {
+    const p = parts.find((q) => q.id === n.id);
+    if (p) { Object.assign(p, { name_en: n.name_en, name_id: n.name_id, label: n.label }); changed++; }
+  }
+  for (const a of r.add_parts || []) {
+    if (parts.length >= 12 || parts.some((p) => p.id === a.id) || !Array.isArray(a.box_2d)) continue;
+    const { box_2d, outline, ...rest } = a;
+    parts.push({ ...rest, box: box(box_2d), outline: (outline || []).map(pt) });
+    changed++;
+  }
+  const ids = new Set(parts.map((p) => p.id));
+  const drop = (r.remove_links || []).map((l) => `${l.from}>${l.to}`);
+  if (drop.length) { links = links.filter((l) => !drop.includes(`${l.from}>${l.to}`) && !drop.includes(`${l.to}>${l.from}`)); changed++; }
+  for (const l of r.add_links || []) {
+    if (!ids.has(l.from) || !ids.has(l.to)) continue;
+    links.push({ ...l, path: (l.path || []).map(pt) });
+    changed++;
+  }
+  // the findings a teacher sees are the ones that led to a change
+  const findings = (r.findings || []).filter((f) => f.note_en).slice(0, 8);
+  return { figure: changed ? { ...figure, parts, links, figure_box: extent(parts, links) } : figure, matches: Boolean(r.matches) && !changed, changed, findings };
 }
 
 // ---------------------------------------------------------------- answering a question

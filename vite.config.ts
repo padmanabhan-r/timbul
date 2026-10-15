@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import type { IncomingMessage, ServerResponse } from "node:http";
 // @ts-expect-error plain ESM module shared with the sample builder
-import { readFigure, askFigure, speakText, hearSheet, loadKey, MODELS, GeminiError } from "./server/gemini.mjs";
+import { readFigure, locateFigure, verifyFigure, askFigure, speakText, hearSheet, loadKey, MODELS, GeminiError } from "./server/gemini.mjs";
 
 // Local API for development: the Gemini key is read on this side and never sent to the browser.
 function timbulApi(): Plugin {
@@ -37,6 +37,24 @@ function timbulApi(): Plugin {
         try {
           const { image, mime } = await body(req);
           send(res, 200, await readFigure(key, image, mime));
+        } catch (e) {
+          fail(res, e);
+        }
+      });
+      server.middlewares.use("/api/locate", async (req, res) => {
+        if (req.method !== "POST") return send(res, 405, { error: "POST only" });
+        if (!key) return send(res, 500, { error: "No Gemini key found in .env", kind: "key" });
+        try {
+          send(res, 200, await locateFigure(key, await body(req)));
+        } catch (e) {
+          fail(res, e);
+        }
+      });
+      server.middlewares.use("/api/verify", async (req, res) => {
+        if (req.method !== "POST") return send(res, 405, { error: "POST only" });
+        if (!key) return send(res, 500, { error: "No Gemini key found in .env", kind: "key" });
+        try {
+          send(res, 200, await verifyFigure(key, await body(req)));
         } catch (e) {
           fail(res, e);
         }

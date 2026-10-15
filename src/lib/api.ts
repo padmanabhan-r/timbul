@@ -1,4 +1,4 @@
-import type { Figure, Lang } from "./types";
+import type { Figure, Finding, Lang } from "./types";
 
 // The browser talks to /api, which holds the Gemini key. Locally that is the Vite dev server.
 
@@ -29,6 +29,14 @@ function friendly(kind: string, raw: string) {
 
 export function readPage(image: string, mime: string) {
   return post<Figure>("/api/read", { image, mime });
+}
+
+export function locateFigure(image: string, mime: string) {
+  return post<{ found: boolean; box: [number, number, number, number] }>("/api/locate", { image, mime });
+}
+
+export function verifyDrawing(image: string, mime: string, drawing: string, figure: Figure, checks: { name: string; pass: boolean; value: string }[]) {
+  return post<{ figure: Figure; matches: boolean; changed: number; findings: Finding[] }>("/api/verify", { image, mime, drawing, figure, checks });
 }
 
 export interface Answer {

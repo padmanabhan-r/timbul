@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Lang, SavedFigure } from "../lib/types";
 import { buildSheet, sheetSvg, type Sheet } from "../lib/tactile";
 import { ask, ApiError } from "../lib/api";
+import { saveFigure } from "../lib/store";
 import { speak, stopSpeaking, startRecording, type Recording } from "../lib/speech";
 import { FigureView } from "../components/FigureView";
 import { Checks, MicIcon, TopBar, Wave, Who } from "../components/Bits";
@@ -24,6 +25,8 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
   const [error, setError] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [showOriginal, setShowOriginal] = useState(false);
+  // A sheet the teacher made is printed only once they have approved it beside the original.
+  const [approved, setApproved] = useState(Boolean(saved.sample || saved.approved));
   const [level, setLevel] = useState(0);
   const [announce, setAnnounce] = useState("");
   const rec = useRef<Recording | null>(null);
@@ -247,7 +250,11 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
             <button className="btn ghost" type="button" aria-pressed={showOriginal} onClick={() => setShowOriginal((v) => !v)}>
               {showOriginal ? "Hide original" : "Show original"}
             </button>
-            <button className="btn" type="button" onClick={download}>Print tactile sheet</button>
+            {approved ? (
+              <button className="btn" type="button" onClick={download}>Print tactile sheet</button>
+            ) : (
+              <button className="btn" type="button" onClick={async () => { await saveFigure({ ...saved, approved: true }); setApproved(true); }}>Approve for printing</button>
+            )}
           </div>
         </footer>
       </main>

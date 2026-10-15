@@ -296,7 +296,18 @@ function layout(saved: SavedFigure, aspect: number, withKey: boolean, notesIn: s
       [x1 + off, y0],
       [x0 - off - w, y1 - H],
     ];
-    const spot = candidates.find(([x, y]) => clear(x, y, w));
+    // Then rings further out around the part, and spots inside it, before giving up on a full label.
+    const ring = (lw: number): P[] => {
+      const out: P[] = [];
+      for (let r = off; r <= 30; r += 3)
+        for (let i = 0; i < 16; i++) {
+          const a = (i / 16) * Math.PI * 2;
+          out.push([cx + Math.cos(a) * ((x1 - x0) / 2 + r) - lw / 2, cy + Math.sin(a) * ((y1 - y0) / 2 + r) - H / 2]);
+        }
+      for (let fx = 0.2; fx <= 0.8; fx += 0.15) for (let fy = 0.2; fy <= 0.8; fy += 0.15) out.push([x0 + (x1 - x0) * fx - lw / 2, y0 + (y1 - y0) * fy - H / 2]);
+      return out;
+    };
+    const spot = candidates.find(([x, y]) => clear(x, y, w)) || ring(w).find(([x, y]) => clear(x, y, w) && Math.hypot(x + w / 2 - cx, y + H / 2 - cy) < Math.max(x1 - x0, y1 - y0) / 2 + 16);
     if (spot) {
       labels.push({ partId: sp.part.id, text, cells, unicode: toUnicode(cells), x: spot[0], y: spot[1], w, dots: cellDots(cells, spot[0], spot[1]) });
       continue;
@@ -304,7 +315,7 @@ function layout(saved: SavedFigure, aspect: number, withKey: boolean, notesIn: s
     const key = letters[keyList.length % 26];
     const kc = toBraille(key).cells;
     const kw = cellsWidth(kc.length);
-    const kspot = ([[cx - kw / 2, cy - H / 2], ...candidates.map(([x, y]) => [x + (w - kw) / 2, y])] as P[]).find(([x, y]) => clear(x, y, kw)) || ([cx - kw / 2, cy - H / 2] as P);
+    const kspot = ([[cx - kw / 2, cy - H / 2], ...candidates.map(([x, y]) => [x + (w - kw) / 2, y]), ...ring(kw)] as P[]).find(([x, y]) => clear(x, y, kw)) || ([cx - kw / 2, cy - H / 2] as P);
     sp.key = key;
     labels.push({ partId: sp.part.id, text: key, cells: kc, unicode: toUnicode(kc), x: kspot[0], y: kspot[1], w: kw, dots: cellDots(kc, kspot[0], kspot[1]), key });
     keyList.push({ key, text, cells, dots: [], x: 0, y: 0 });
@@ -358,7 +369,8 @@ function occlude(parts: SheetPart[], links: { link: Link; dots: P[] }[], X: (v: 
     const front = bySize[i];
     for (let j = i + 1; j < bySize.length; j++) {
       const back = bySize[j];
-      if (!overlaps(front.box, back.box) || contains(back.box, front.box)) continue;
+      // a part inside another counts too: the outline around it breaks where the inner part comes close
+      if (!overlaps(front.box, back.box)) continue;
       const frontDots = original.get(front)!;
       const outline = outlineOf(front);
       back.dots = back.dots.filter((p) => !inside(front.part, front.box, outline, p, -keepOff) && !near(p, frontDots, keepOff));
@@ -461,6 +473,18 @@ export function sheetSvg(sheet: Sheet, opts: { ink?: boolean } = {}): string {
 <rect width="100%" height="100%" fill="#fff"/>
 <g fill="#000">${line}${fill}${braille}${ink}${codeInk}</g>
 </svg>`;
+}
+
+/** The drawing Gemini checks against the page: the dots over a faded copy of the original, each part's id beside it in grey. */
+export function checkSvg(sheet: Sheet, saved: SavedFigure): string {
+  const [bx0, by0, bx1, by1] = saved.figure.figure_box?.length === 4 ? saved.figure.figure_box : [0, 0, 1000, 1000];
+  const imgW = (sheet.draw.w * 1000) / Math.max(1, bx1 - bx0);
+  const imgH = (sheet.draw.h * 1000) / Math.max(1, by1 - by0);
+  const under = `<image href="${saved.image}" x="${(sheet.draw.x - (bx0 / 1000) * imgW).toFixed(2)}" y="${(sheet.draw.y - (by0 / 1000) * imgH).toFixed(2)}" width="${imgW.toFixed(2)}" height="${imgH.toFixed(2)}" preserveAspectRatio="none" opacity="0.35"/>`;
+  const tags = sheet.parts
+    .map((p) => `<text x="${(p.box[0] + 0.8).toFixed(1)}" y="${(p.box[1] - 1).toFixed(1)}" font-size="3.6" font-family="sans-serif" fill="#777">${esc(p.part.id)}</text>`)
+    .join("");
+  return sheetSvg(sheet).replace('<g fill="#000">', `${under}<g fill="#000">`).replace("</g>\n</svg>", `</g><g>${tags}</g>\n</svg>`);
 }
 
 function esc(s: string) {

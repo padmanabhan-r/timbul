@@ -245,6 +245,17 @@ a { color: inherit; }
 .emerge { background: var(--white); border: 3px solid var(--ink); border-radius: 4px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
 .emerge .waiting { padding: 30px; text-align: center; font-weight: 700; font-size: 18px; }
 .emerge .waiting small { display: block; font-weight: 600; font-size: 15px; margin-top: 6px; }
+.add .mid { display: flex; flex-direction: column; justify-content: center; gap: 22px; min-width: 0; }
+.review { border: 3px solid var(--ink); background: var(--white); border-radius: 6px; padding: 12px 14px; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.review b { display: block; font-weight: 800; margin-bottom: 6px; }
+.review ul { margin: 0; padding-left: 18px; }
+.review li + li { margin-top: 4px; }
+.review p { margin: 0; }
+.review .review-tail { margin-top: 8px; font-weight: 800; }
+.emerge .draft { position: relative; }
+.emerge .draft .figure-svg { opacity: 0.9; }
+.emerge .draft .original { opacity: 0.35; }
+.draft-note { position: absolute; left: 0; right: 0; bottom: 8px; margin: 0; text-align: center; font-weight: 800; font-size: 16px; }
 .add-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
 .add-error { grid-column: 1 / -1; border: 3px solid var(--ink); background: var(--white); padding: 16px 20px; border-radius: 6px; font-weight: 700; }
 
