@@ -49,3 +49,7 @@ firebase-debug.log*
 # Vercel
 .vercel/
 tsconfig.tsbuildinfo
+.vercel
+
+# Local notes
+HACKATHONS.md
