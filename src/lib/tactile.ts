@@ -369,8 +369,10 @@ function occlude(parts: SheetPart[], links: { link: Link; dots: P[] }[], X: (v: 
     const front = bySize[i];
     for (let j = i + 1; j < bySize.length; j++) {
       const back = bySize[j];
-      // a part inside another counts too: the outline around it breaks where the inner part comes close
-      if (!overlaps(front.box, back.box)) continue;
+      // neighbours that only come close count too, and so does a part inside another: the larger outline breaks
+      // wherever the smaller one comes within 3 mm
+      const grown = [front.box[0] - keepOff, front.box[1] - keepOff, front.box[2] + keepOff, front.box[3] + keepOff];
+      if (!overlaps(grown, back.box)) continue;
       const frontDots = original.get(front)!;
       const outline = outlineOf(front);
       back.dots = back.dots.filter((p) => !inside(front.part, front.box, outline, p, -keepOff) && !near(p, frontDots, keepOff));
