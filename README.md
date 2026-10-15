@@ -1,16 +1,16 @@
 # Timbul
 
-Timbul turns the figures in a textbook into something a blind or low-vision student can use. A teacher uploads a page; Timbul finds each diagram, draws a simplified tactile version with braille labels that is ready to print, and lets the student explore the figure by voice.
+Timbul turns the figures in a textbook into something a blind or low-vision student can use. A teacher photographs a page. Gemini finds the diagram, reads it and checks its own drawing against the page. Timbul's code then draws a simplified tactile sheet with braille labels, ready to print, and the student explores the same figure by touch and by voice.
 
 *Timbul* is Bahasa Indonesia for "raised" or "embossed", and also "to emerge".
 
 Our entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com) (Hack2skill × Google Cloud, JAPAC).
 
-**Team:** Padmanabhan, Shamila
+**Team:** HammerLimbo Tech: Padmanabhan Rajendrakumar, Sharmila
 **Theme:** Sustainability & Social Impact
-**Live demo:** _TBD_ · **Video:** _TBD_ · **Deck:** _TBD_
+**Live demo:** _added after the Cloud Run deployment_ · **Video:** _TBD_ · **Deck:** [deck/work/Timbul - AI Builder Cup.pptx](deck/work/)
 
-> Submission deadline: **18 Oct 2026**. Rules, themes and rubric are in [docs/HACKATHON_BRIEF.md](docs/HACKATHON_BRIEF.md). What the product is and who it is for is in [PRODUCT.md](PRODUCT.md).
+> Submission deadline: **18 Oct 2026**. Rules, themes and rubric are in [docs/HACKATHON_BRIEF.md](docs/HACKATHON_BRIEF.md). What the product is and who it is for is in [PRODUCT.md](PRODUCT.md). How to deploy it on Google Cloud is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Run it
 
@@ -18,21 +18,43 @@ Our entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com) (
 ./start.sh
 ```
 
-It installs dependencies on the first run, starts the app on http://localhost:5173 and opens it in your browser. It needs Node.js 18 or newer and, in `.env`, an OpenRouter key (`OPENROUTER_API_KEY`) and a Gemini API key (`GEMINI_API_KEY`) (see `.env.example`). The key stays on the local server and is never sent to the browser. Use Chrome for the voice features.
+It installs dependencies on the first run, starts the app on http://localhost:5173 and opens it in your browser. It needs Node.js 20 or newer and, in `.env`, a Gemini API key (`GEMINI_API_KEY`) and optionally an OpenRouter key (`OPENROUTER_API_KEY`) as a backup route to the same Gemini models (see `.env.example`). The keys stay on the server and are never sent to the browser. Use Chrome for the voice features.
 
-## How to use it
+## How it works
 
-1. **Library.** Opens on two sample figures (a series circuit and a plant cell) that work without using any Gemini allowance.
-2. **Add a page.** Choose or take a photo of a textbook page with a diagram. Gemini reads it (one to three minutes on the free tier), then the tactile figure feeds out line by line and is checked. It is saved in your browser.
-3. **Explore.** Click a part, or use the arrow keys to move between parts as a finger would; each part is spoken. Press **O** for the overview. Press **M** or the microphone button to ask a question by voice, and press it again to send; or type a question. Switch the spoken language between English and Bahasa Indonesia at the top right.
-4. **Checks.** The strip at the bottom shows whether the sheet passes four tactile-graphics rules. **Show original** lays the page under the tactile drawing to compare them. **Print tactile sheet** downloads an A4 SVG in real millimetres for swell paper or an embosser.
+1. **Add a page (teacher).** A photo of a textbook page.
+   - Gemini 3.5 Flash-Lite finds the figure, and Timbul crops to it.
+   - Gemini 3.8 Flash reads the close-up: every part, where it sits and what joins it, in English and Bahasa Indonesia.
+2. **Gemini checks its own drawing.** Timbul draws the reading, lays it over a faded copy of the page and sends both to Gemini, which corrects any part that is missing, misplaced or misnamed.
+   - It runs for up to two rounds, with a time limit.
+   - In our test it caught a part we had moved on purpose and put it back.
+3. **Timbul's code draws the sheet.**
+   - Every line is drawn as raised dots at true size, with uncontracted braille labels and a key.
+   - Where outlines cross or come within 3 mm, the one behind is broken.
+   - Many identical items (the nodes of a neural network, say) become groups joined by one arrow.
+   - Four tactile-graphics checks run on every sheet: lines at least 3 mm apart, braille clear of lines, at most 12 parts, every label in braille.
+4. **The teacher approves it.** Nothing prints until the teacher has compared the sheet with the original (**Show original**).
+   - **Print tactile sheet** downloads an A4 SVG in real millimetres for swell paper or an embosser, with the sheet number in braille and an orientation notch.
+5. **The class library.** Approved sheets are numbered and shared by class code, so a sheet made on the teacher's laptop opens on a student's phone.
+6. **Explore (student).**
+   - On the home screen, the student says "sheet two", or types the number.
+   - Click a part, use the arrow keys, or on a phone swipe through the parts list with VoiceOver or TalkBack. Each part is spoken.
+   - **O** gives the overview. **M** or the microphone asks a question by voice; the answer is spoken.
+   - Everything works in English and Bahasa Indonesia.
 
 ## Stack
 
-- React with Vite. Locally, Vite's dev server also serves `/api`, which holds the Gemini key.
-- Gemini reads the figure (`gemini-3.8-flash`) and answers questions (`gemini-3.5-flash-lite`). Calls go to Gemini through OpenRouter first (`OPENROUTER_API_KEY` in `.env`) and fall back to Google's Gemini API (`GEMINI_API_KEY`), trying several Gemini models in turn when one is busy or out of quota. Set `TIMBUL_PROVIDER=google` to call Google first.
-- Timbul's voice is Gemini text-to-speech (`gemini-3.8-flash-tts`, voice Sulafat) through Google's API, cached on disk so each line is generated once; the browser's own voice is the fallback.
-- Timbul's own code draws every line as raised dots, places the braille labels and runs the checks (`src/lib/tactile.ts`, `src/lib/braille.ts`).
-- Figures you add are kept in the browser (IndexedDB). Firebase Hosting, Firestore and Firebase AI Logic are the deployment target and are not wired up yet.
+- **Gemini models** (Google's Gemini API, OpenRouter as backup):
+  - `gemini-3.8-flash` reads figures and checks drawings;
+  - `gemini-3.5-flash-lite` finds figures, hears questions and sheet numbers;
+  - `gemini-3.8-flash-tts` (voice Sulafat) speaks, cached so each line is made once.
+  - Each call tries further Gemini models when one is busy, with timeouts.
+- **One API, three hosts.** `server/api.mjs` is the API. The Vite dev server, the Cloud Run server (`server/index.mjs`, `Dockerfile`) and a Vercel function used for testing (`api/[route].mjs`) all serve it.
+  - A spending guard limits Gemini calls per visitor and per day.
+- **Class library:** Firestore on Google Cloud, a JSON file elsewhere (`server/library.mjs`), with a copy in the browser (IndexedDB) for offline use.
+- **Tactile engine:** `src/lib/tactile.ts` (dots, symbols, occlusion, labels, checks, SVG export) and `src/lib/braille.ts`.
+- **App:** React with Vite and TypeScript.
+- **Pipeline check:** `node scripts/check-reading.mjs <page.png>` runs find → read → draw → self-check on one image and writes overlays to `.cache/check/`.
+  - `--break <part>` moves a part to test the self-check.
 
-The `.githooks/commit-msg` hook removes AI co-author trailers from commit messages, so only the human author is credited (`git config core.hooksPath .githooks`).
+The `.githooks/commit-msg` hook removes AI co-author trailers from commit messages, so only the human authors are credited (`git config core.hooksPath .githooks`).
