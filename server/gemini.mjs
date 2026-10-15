@@ -55,14 +55,14 @@ export class GeminiError extends Error {
   }
 }
 
-async function generate(key, model, parts, schema, temperature = 0.2) {
+async function generate(key, model, parts, schema, temperature = 0.2, timeout = 90_000) {
   let res;
   // A busy model (503) or a dropped connection is retried; a quota refusal (429) is not.
   for (let attempt = 0; ; attempt++) {
     try {
       res = await fetch(`${API}/${model}:generateContent`, {
         method: "POST",
-        signal: AbortSignal.timeout(90_000),
+        signal: AbortSignal.timeout(timeout),
         headers: { "Content-Type": "application/json", "x-goog-api-key": key },
         body: JSON.stringify({
           contents: [{ role: "user", parts }],
@@ -70,11 +70,12 @@ async function generate(key, model, parts, schema, temperature = 0.2) {
         }),
       });
     } catch (e) {
-      if (attempt < 2) {
+      // a dropped connection is tried again; a model that ran out of time is not (the next model is)
+      if (attempt < 2 && e.name !== "TimeoutError") {
         await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
         continue;
       }
-      throw new GeminiError(String(e), 502, "other");
+      throw new GeminiError(`${model}: ${e.name === "TimeoutError" ? "timed out" : String(e)}`, 502, "other");
     }
     if ((res.status === 503 || res.status === 500) && attempt < 2) {
       await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
@@ -102,7 +103,7 @@ function jsonSchema(s) {
   return out;
 }
 
-async function openrouter(model, parts, schema, temperature, effort = "low") {
+async function openrouter(model, parts, schema, temperature, effort = "low", timeout = 90_000) {
   const key = loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]);
   if (!key) throw new GeminiError("No OpenRouter key", 401, "key");
   const content = parts.map((p) => {
@@ -113,7 +114,7 @@ async function openrouter(model, parts, schema, temperature, effort = "low") {
   });
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    signal: AbortSignal.timeout(90_000),
+    signal: AbortSignal.timeout(timeout),
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, "X-Title": "Timbul" },
     body: JSON.stringify({
       model, temperature, messages: [{ role: "user", content }],
@@ -129,14 +130,14 @@ async function openrouter(model, parts, schema, temperature, effort = "low") {
 }
 
 /** Tries each model in turn; moves on when one is busy (503) or its free allowance is used up (429). */
-async function generateAny(key, models, parts, schema, temperature, fallback = [], effort = "low") {
+async function generateAny(key, models, parts, schema, temperature, fallback = [], effort = "low", timeout = 90_000) {
   let last;
   const routed = fallback.map((m) => "openrouter:" + m);
   const order = !fallback.length ? models : PRIMARY === "openrouter" && loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]) ? [...routed, ...models] : [...models, ...routed];
   for (const model of order) {
     if (model.startsWith("openrouter:")) {
       try {
-        return { result: await openrouter(model.slice(11), parts, schema, temperature, effort), model };
+        return { result: await openrouter(model.slice(11), parts, schema, temperature, effort, timeout), model };
       } catch (e) {
         last = e;
         console.warn(`[timbul] ${model} failed (${e.status}); trying the next model`);
@@ -144,10 +145,10 @@ async function generateAny(key, models, parts, schema, temperature, fallback = [
       }
     }
     try {
-      return { result: await generate(key, model, parts, schema, temperature), model };
+      return { result: await generate(key, model, parts, schema, temperature, timeout), model };
     } catch (e) {
       last = e;
-      const moveOn = e instanceof GeminiError && (e.kind === "quota" || e.kind === "model" || e.status === 503 || e.status === 500);
+      const moveOn = e instanceof GeminiError && (e.kind === "quota" || e.kind === "model" || e.status === 503 || e.status === 500 || e.status === 502);
       if (!moveOn) throw e;
       console.warn(`[timbul] ${model} unavailable (${e.status}); trying the next model`);
     }
@@ -329,7 +330,8 @@ export async function verifyFigure(key, { image, mime, drawing, figure, checks =
     { inlineData: { mimeType: "image/png", data: drawing } },
     { text: `${VERIFY_PROMPT}\n\nThe reading:\n${JSON.stringify(reading)}\n\nThe rule checks:\n${checks.map((c) => `- ${c.name}: ${c.pass ? "pass" : "FAIL"} (${c.value})`).join("\n") || "- not run"}` },
   ];
-  const { result, model } = await generateAny(key, MODELS.read, parts, VERIFY_SCHEMA, 0.1, FALLBACK.read);
+  // The check is a safeguard, not a gate: two models at most, 45 seconds each, then the teacher's own look decides.
+  const { result, model } = await generateAny(key, MODELS.read.slice(0, 2), parts, VERIFY_SCHEMA, 0.1, FALLBACK.read.slice(0, 1), "low", 45_000);
   return { ...applyReview(figure, result), model };
 }
 

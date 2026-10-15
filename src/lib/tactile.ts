@@ -123,10 +123,11 @@ function distToSegment([px, py]: P, [ax, ay]: P, [bx, by]: P) {
 }
 
 /** Circuit symbols, drawn inside the part's box as line segments. */
-function symbol(shape: Part["shape"], [x0, y0, x1, y1]: number[]): P[][] {
+function symbol(shape: Part["shape"], [x0, y0, x1, y1]: number[], wire?: "h" | "v"): P[][] {
   const w = x1 - x0, h = y1 - y0;
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-  const horiz = w >= h;
+  // a symbol lies along the wire it sits on; without wires, along its box's longer side
+  const horiz = wire ? wire === "h" : w >= h;
   const long = horiz ? w : h, short = horiz ? h : w;
   // map (u along the long axis, v across it) to x, y
   const at = (u: number, v: number): P => (horiz ? [cx + u, cy + v] : [cx + v, cy + u]);
@@ -215,11 +216,25 @@ function layout(saved: SavedFigure, aspect: number, withKey: boolean, notesIn: s
     kept.push({ part, box, dots: [], fill: [], texture: null, merged: [] });
   }
 
+  // Which way the wires leave a part: from its sides (horizontal) or from its top and bottom (vertical).
+  const wireDir = (id: string, box: number[]): "h" | "v" | undefined => {
+    let hz = 0, vt = 0;
+    for (const l of fig.links) {
+      if (!l.path || l.path.length < 2) continue;
+      const ends = [...(l.from === id ? [l.path[0]] : []), ...(l.to === id ? [l.path[l.path.length - 1]] : [])];
+      for (const [ex, ey] of ends) {
+        const dx = Math.abs(X(ex) - (box[0] + box[2]) / 2), dy = Math.abs(Y(ey) - (box[1] + box[3]) / 2);
+        if (dx > dy) hz++; else vt++;
+      }
+    }
+    return hz || vt ? (hz >= vt ? "h" : "v") : undefined;
+  };
+
   // Outlines and symbols.
   for (const sp of kept) {
     const [x0, y0, x1, y1] = sp.box;
     const p = sp.part;
-    if (isSymbol(p.shape)) sp.dots = symbol(p.shape, sp.box).flatMap((seg) => along(seg));
+    if (isSymbol(p.shape)) sp.dots = symbol(p.shape, sp.box, wireDir(p.id, sp.box)).flatMap((seg) => along(seg));
     else if (p.shape === "ellipse") sp.dots = along(ellipsePoints((x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2), LINE.gap, true);
     else if (p.shape === "polygon" && p.outline && p.outline.length > 2) sp.dots = along(p.outline.map(([x, y]) => [X(x), Y(y)] as P), LINE.gap, true);
     else if (p.shape === "group") sp.dots = groupDots(sp.box, p.count || 3);

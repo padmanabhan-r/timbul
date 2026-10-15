@@ -81,6 +81,14 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
     say(`${lang === "id" ? p.name_id : p.name_en}. ${lang === "id" ? p.detail_id : p.detail_en}`);
   };
 
+  /** Where a part sits on the sheet, in words: "upper left", "kiri atas". */
+  const whereOn = (box: number[]) => {
+    const cx = ((box[0] + box[2]) / 2 - sheet.draw.x) / sheet.draw.w, cy = ((box[1] + box[3]) / 2 - sheet.draw.y) / sheet.draw.h;
+    const v = cy < 0.36 ? 0 : cy > 0.64 ? 2 : 1, h = cx < 0.36 ? 0 : cx > 0.64 ? 2 : 1;
+    if (lang === "id") return [["kiri atas", "atas tengah", "kanan atas"], ["kiri", "tengah", "kanan"], ["kiri bawah", "bawah tengah", "kanan bawah"]][v][h];
+    return [["upper left", "top middle", "upper right"], ["left", "middle", "right"], ["lower left", "bottom middle", "lower right"]][v][h];
+  };
+
   /** Arrow keys move to the nearest part in that direction, like moving a finger across the sheet. */
   const move = (dx: number, dy: number) => {
     const centre = (b: number[]) => [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
@@ -197,6 +205,17 @@ export function Explore({ saved, lang, setLang }: { saved: SavedFigure; lang: La
           >
             <FigureView saved={saved} sheet={sheet} focusId={focusId} onPick={describe} showOriginal={showOriginal} lang={lang} />
           </div>
+          {/* Every part as a button, so a screen reader on a phone can swipe through the figure and tap to hear it */}
+          <ul className="parts-list" aria-label={lang === "id" ? "Bagian-bagian gambar" : "Parts of the figure"}>
+            {sheet.parts.map((sp) => (
+              <li key={sp.part.id}>
+                <button type="button" aria-pressed={focusId === sp.part.id} onClick={() => describe(sp.part.id)}>
+                  {lang === "id" ? sp.part.name_id : sp.part.name_en}
+                  <span>, {whereOn(sp.box)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
           <p className="hint" aria-hidden="true">
             <span><kbd>← ↑ → ↓</kbd>{lang === "id" ? "pindah antarbagian" : "move between parts"}</span>
             <span><kbd>O</kbd>{lang === "id" ? "gambaran umum" : "overview"}</span>

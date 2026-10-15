@@ -1,43 +1,63 @@
 {
  "found": true,
- "title_en": "Simple Circuit with Battery and Resistor",
- "title_id": "Rangkaian Sederhana dengan Baterai dan Resistor",
+ "title_en": "Simple Series Circuit",
+ "title_id": "Rangkaian Seri Sederhana",
  "subject": "Physics",
  "figure_type": "circuit",
- "overview_en": "A simple circuit diagram showing a closed loop. A battery box sits at the bottom, connected by wires on each side to a zigzag resistor symbol at the top.",
- "overview_id": "Diagram rangkaian listrik sederhana berbentuk satu lingkaran tertutup. Sebuah baterai terletak di bagian bawah, terhubung oleh kabel di kedua sisinya ke sebuah resistor zig-zag di bagian atas.",
+ "overview_en": "A simple rectangular series circuit. It features a battery on the left, an open switch at the top, and a lamp on the right, all connected in a single loop of wire.",
+ "overview_id": "Sebuah rangkaian seri persegi panjang yang sederhana. Rangkaian ini memiliki baterai di sebelah kiri, sakelar terbuka di bagian atas, dan lampu di sebelah kanan, semuanya terhubung dalam satu putaran kabel.",
  "parts": [
   {
    "id": "battery",
-   "name_en": "Battery",
-   "name_id": "Baterai",
+   "name_en": "battery",
+   "name_id": "baterai",
    "label": "battery",
    "kind": "component",
-   "shape": "rect",
-   "detail_en": "A large rectangular block representing the electrical power source, located in the lower-middle area of the circuit.",
-   "detail_id": "Kotak persegi panjang besar sebagai sumber daya listrik, terletak di bagian tengah bawah rangkaian.",
+   "shape": "battery",
+   "detail_en": "The power source for the circuit, located on the left vertical wire. It consists of two parallel horizontal lines of different lengths.",
+   "detail_id": "Sumber daya untuk rangkaian, terletak pada kabel vertikal di sebelah kiri. Terdiri dari dua garis horizontal sejajar dengan panjang yang berbeda.",
+   "count": 0,
    "box": [
-    239,
-    432,
-    698,
-    930
+    177,
+    470,
+    280,
+    548
    ],
    "outline": []
   },
   {
-   "id": "resistor",
-   "name_en": "Resistor",
-   "name_id": "Resistor",
-   "label": "resistor",
+   "id": "switch",
+   "name_en": "open switch",
+   "name_id": "sakelar terbuka",
+   "label": "switch",
    "kind": "component",
-   "shape": "resistor",
-   "detail_en": "A zigzag line representing an electrical resistor, placed horizontally along the top of the circuit.",
-   "detail_id": "Garis zig-zag yang melambangkan hambatan listrik (resistor), berada mendatar di bagian atas rangkaian.",
+   "shape": "switch_open",
+   "detail_en": "An open switch on the top horizontal wire that prevents current from flowing. It is shown as a diagonal line lifted away from the circuit path.",
+   "detail_id": "Sakelar terbuka pada kabel horizontal atas yang mencegah arus mengalir. Ditunjukkan sebagai garis diagonal yang terangkat menjauh dari jalur rangkaian.",
+   "count": 0,
    "box": [
-    292,
-    67,
-    666,
-    269
+    421,
+    173,
+    576,
+    273
+   ],
+   "outline": []
+  },
+  {
+   "id": "lamp",
+   "name_en": "lamp",
+   "name_id": "lampu",
+   "label": "lamp",
+   "kind": "component",
+   "shape": "lamp",
+   "detail_en": "A light bulb on the right vertical wire, represented by a circle with an X inside. It will glow when the switch is closed.",
+   "detail_id": "Bola lampu pada kabel vertikal di sebelah kanan, diwakili oleh lingkaran dengan tanda X di dalamnya. Lampu ini akan menyala saat sakelar ditutup.",
+   "count": 0,
+   "box": [
+    720,
+    393,
+    822,
+    556
    ],
    "outline": []
   }
@@ -45,60 +65,76 @@
  "links": [
   {
    "from": "battery",
-   "to": "resistor",
+   "to": "switch",
    "kind": "wire",
    "path": [
     [
-     239,
-     681
+     228,
+     470
     ],
     [
-     126,
-     681
+     228,
+     254
     ],
     [
-     126,
-     168
-    ],
-    [
-     292,
-     168
+     421,
+     254
     ]
    ]
   },
   {
-   "from": "resistor",
+   "from": "switch",
+   "to": "lamp",
+   "kind": "wire",
+   "path": [
+    [
+     576,
+     254
+    ],
+    [
+     771,
+     254
+    ],
+    [
+     771,
+     393
+    ]
+   ]
+  },
+  {
+   "from": "lamp",
    "to": "battery",
    "kind": "wire",
    "path": [
     [
-     666,
-     168
+     771,
+     556
     ],
     [
-     874,
-     168
+     771,
+     694
     ],
     [
-     874,
-     681
+     228,
+     694
     ],
     [
-     698,
-     681
+     228,
+     548
     ]
    ]
   }
  ],
  "left_out": [
-  "Outer border box surrounding the entire figure."
+  "text labels: battery, switch (open), lamp, wire",
+  "figure caption: Fig. 4.2 A simple series circuit with a battery, a switch and a lamp."
  ],
  "figure_box": [
-  118,
-  59,
-  882,
-  938
+  169,
+  165,
+  830,
+  702
  ],
  "coords": "image",
- "model": "gemini-3.8-flash"
+ "model": "gemini-3-flash-preview"
 }

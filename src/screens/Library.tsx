@@ -126,7 +126,7 @@ export function Library({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
             <p>No blind student or teacher of the blind has used Timbul yet, and no sheet has been printed on swell paper. The checks follow published rules; they are not a reader's approval.</p>
           </div>
         </section>
-        <p className="hint" style={{ marginTop: 20 }}>Sample figure: “Basic series circuit”, Wikimedia Commons, CC BY 4.0</p>
+        <p className="hint" style={{ marginTop: 20 }}>Sample figure: a series circuit page drawn by the Timbul team.</p>
       </main>
     </div>
   );
