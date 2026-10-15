@@ -231,7 +231,7 @@ text(s, 0.35, 4.55, 9.3, 0.8, ["Gemini is called through Google's Gemini API, tr
 # ---------------------------------------------------------------- slide 9: technologies
 s = S[8]
 cols = [
-    ("Google AI", ["Gemini 3.8 Flash: reads figures into structured JSON, checks its own drawing, and finds a fingertip on the printed sheet (vision, two images)", "Gemini 3.5 Flash-Lite: finds the figure; spoken questions and sheet numbers (audio in)", "Gemini 3.8 Flash TTS: Timbul's voice", "Fallbacks: Gemini 3.7, 3.6 and 3.5 Flash"]),
+    ("Google AI", ["Gemini 3.8 Flash: reads figures into structured JSON, checks its own drawing, and finds a fingertip on the printed sheet (vision, two images)", "Gemini 3.5 Flash-Lite: finds the figure; spoken questions and sheet numbers (audio in)", "Gemini 3.8 Flash TTS: Timbul's voice", "Fallbacks: Gemini 3.7, 3.6 and 3.5 Flash", [("In real use: ", {"bold": True}), ("Gemini Pro for reading and the self-check; the prototype runs on Flash to stay in the free tier", {})]]),
     ("Google Cloud", ["Cloud Run: the app and its API", "Firestore: the class library", "Secret Manager: the keys", "Cloud Build and Artifact Registry", "Firebase Hosting: the short address"]),
     ("Our own code", ["Tactile layout engine: dots, occlusion, label placement", "Uncontracted braille in standard 6 mm cells", "Four rule checks with automatic fixes", "A4 SVG export at real millimetres"]),
     ("App", ["React, TypeScript, Vite", "Web Audio microphone capture", "IndexedDB copy for offline use", "Screen-reader labels, keyboard use"]),
@@ -244,7 +244,7 @@ for i, (h, items) in enumerate(cols):
 
 # ---------------------------------------------------------------- slide 10: cost
 s = S[9]
-rows = [("One figure", "Three to five Gemini calls: find the figure, read it, check the drawing (twice at most). Drawing, braille and rule checks run in Timbul's own code."),
+rows = [("One figure", "Three to five Gemini calls: find, read, check (twice at most); drawing, braille and rules run in our own code. In real use, Gemini Pro reads and checks: more per figure, but each is made once and reused."),
         ("One question", "One small Gemini call, plus one speech call; spoken lines are cached and replayed free."),
         ("Hosting", "Cloud Run scales to zero and is capped at one instance; Firestore and Firebase Hosting within free allowances."),
         ("Printing", "Swell paper is about US$1.30 an A4 sheet; fusers cost US$650 to 1,800; embossers from about US$4,700 (HumanWare, RNIB). About 48 Indonesian special schools own the same imported embosser and most no longer work (ITS Sewagati, 2023). So the voice guide works with no printer, and a teacher can build the sheet by hand from Timbul's layout (Perkins collage method)."),
@@ -283,7 +283,8 @@ text(s, 0.35, 4.15, 9.3, 1.2, [[("How we measured: ", {"bold": True}), ("our own
 
 # ---------------------------------------------------------------- slide 13: future
 s = S[12]
-fut = [("Point and ask on real sheets", "It works on photos today; next, a phone stand and tests with printed swell-paper sheets and real fingers, then live video instead of a photo."),
+fut = [("Stronger Gemini models", "The prototype runs on Gemini Flash to stay within free allowances. In real use, reading the figure and the self-check move to Gemini Pro, for more accurate reading of dense figures; Flash stays for quick questions and speech."),
+       ("Point and ask on real sheets", "It works on photos today; next, a phone stand and tests with printed swell-paper sheets and real fingers, then live video instead of a photo."),
        ("A phone screen built for screen readers", "VoiceOver and TalkBack can already swipe through every part; next, a one-button screen for asking and pointing, usable with the screen off."),
        ("Test with real users", "Sessions with blind students and their teachers at special schools in Indonesia and India, then fix what they find."),
        ("More languages and contracted braille", "Tamil, Thai and Vietnamese next; contracted braille through a standard braille library."),
@@ -291,8 +292,8 @@ fut = [("Point and ask on real sheets", "It works on photos today; next, a phone
 y = 1.3
 for i, (h, d) in enumerate(fut, 1):
     num_dot(s, 0.35, y + 0.02, i, d=0.32)
-    text(s, 0.8, y - 0.02, 8.8, 0.72, [[(h + ": ", {"bold": True}), (d, {})]], size=11)
-    y += 0.8
+    text(s, 0.8, y - 0.02, 8.8, 0.6, [[(h + ": ", {"bold": True}), (d, {})]], size=11)
+    y += 0.68
 
 # ---------------------------------------------------------------- slide 14: links
 s = S[13]

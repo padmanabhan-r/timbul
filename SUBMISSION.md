@@ -31,4 +31,6 @@ Every sheet carries its number in braille. The student says the number to open t
   - Gemini 3.5 Flash-Lite finds figures and hears spoken questions;
   - Gemini TTS speaks.
 
+  The prototype runs on Flash models to stay within free allowances. In real use, reading the figure and the self-check move to Gemini Pro for more accurate reading of dense figures.
+
 Timbul's code places every dot, so what the student hears always matches what they feel.
