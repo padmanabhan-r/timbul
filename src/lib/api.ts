@@ -21,6 +21,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 function friendly(kind: string, raw: string) {
+  if (kind === "limit") return raw;
   if (kind === "quota") return "Today's free Gemini allowance is used up. It resets at 12:30 pm India time (midnight Pacific). The figures already in the library still work.";
   if (kind === "key") return "Gemini refused the API key. Check GEMINI_API_KEY in .env.";
   if (kind === "model") return "That Gemini model is not available to this key.";

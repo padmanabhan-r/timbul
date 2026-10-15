@@ -7,6 +7,27 @@ import { listSheets, saveSheet, store } from "./library.mjs";
 const key = loadKey();
 const json = (status, data) => ({ status, type: "application/json", body: JSON.stringify(data) });
 
+// A spending guard for a public URL: each visitor gets a number of Gemini calls an hour, and the whole server a
+// number a day. Past either, the API says so instead of calling Gemini. Both are set by environment variables.
+const PER_HOUR = Number(process.env.TIMBUL_CALLS_PER_HOUR || 120);
+const PER_DAY = Number(process.env.TIMBUL_CALLS_PER_DAY || 1500);
+const visitors = new Map();
+let day = { date: "", count: 0 };
+function allow(ip) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (day.date !== today) day = { date: today, count: 0 };
+  if (day.count >= PER_DAY) return "Timbul has reached today's limit for this demo. It resets at midnight UTC.";
+  const now = Date.now();
+  const v = visitors.get(ip) || [];
+  const recent = v.filter((t) => now - t < 3600_000);
+  if (recent.length >= PER_HOUR) return "That is a lot of questions in one hour. Try again a little later.";
+  recent.push(now);
+  visitors.set(ip, recent);
+  if (visitors.size > 5000) visitors.clear();
+  day.count++;
+  return null;
+}
+
 const ROUTES = {
   status: async () => json(200, { key: Boolean(key), provider: PRIMARY, models: MODELS, store }),
   read: async (b) => json(200, await readFigure(key, b.image, b.mime)),
@@ -21,7 +42,7 @@ const ROUTES = {
 };
 
 /** One request: the route name (the part after /api/), the method, the query and the parsed JSON body. */
-export async function handle(route, method, query, body) {
+export async function handle(route, method, query, body, ip = "local") {
   try {
     if (route === "library") {
       if (method === "GET") return json(200, { sheets: await listSheets(query.class) });
@@ -32,6 +53,11 @@ export async function handle(route, method, query, body) {
     if (!fn) return json(404, { error: "No such route" });
     if (route !== "status" && method !== "POST") return json(405, { error: "POST only" });
     if (route !== "status" && !key) return json(500, { error: "No Gemini key on the server", kind: "key" });
+    // speech runs on Google's free Gemini TTS allowance and is cached, so only the paid reading and answering count
+    if (route !== "status" && route !== "speak") {
+      const refused = allow(ip);
+      if (refused) return json(429, { error: refused, kind: "limit" });
+    }
     return await fn(body || {});
   } catch (e) {
     const kind = e instanceof GeminiError ? e.kind : "other";
@@ -65,7 +91,8 @@ export async function serve(req, res, route) {
     res.setHeader("Content-Type", "application/json");
     return res.end(JSON.stringify({ error: "Bad request body" }));
   }
-  const out = await handle(route, req.method, Object.fromEntries(url.searchParams), body);
+  const ip = String(req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
+  const out = await handle(route, req.method, Object.fromEntries(url.searchParams), body, ip);
   res.statusCode = out.status;
   res.setHeader("Content-Type", out.type);
   for (const [k, v] of Object.entries(out.headers || {})) res.setHeader(k, v);
