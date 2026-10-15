@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Timbul: a tactile diagram reader for blind and low-vision students. Hackathon entry for the Google Cloud AI Builder Cup 2026, theme Sustainability & Social Impact. Team: Padmanabhan and Shamila. What the product is and who it is for is in `PRODUCT.md`. Rules, themes and rubric are in `docs/HACKATHON_BRIEF.md`; read it before making product or architecture decisions.
+Timbul: a tactile diagram reader for blind and low-vision students. Hackathon entry for the Google Cloud AI Builder Cup 2026, theme Sustainability & Social Impact. Team: Padmanabhan and Sharmila. What the product is and who it is for is in `PRODUCT.md`. Rules, themes and rubric are in `docs/HACKATHON_BRIEF.md`; read it before making product or architecture decisions.
 
 ## Non-negotiable constraints
 
