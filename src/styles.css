@@ -161,13 +161,13 @@ a { color: inherit; }
 }
 .mic[aria-pressed="true"] { box-shadow: 0 0 0 6px var(--ink), 0 0 0 10px var(--yellow); }
 .mic svg { width: 40px; height: 40px; }
-.ask-form { display: flex; gap: 8px; width: 100%; }
+.ask-form { display: flex; gap: 8px; width: 100%; min-width: 0; }
 .ask-form input {
   flex: 1; min-width: 0; min-height: 48px; border-radius: 999px; border: 3px solid var(--yellow);
   background: var(--ink); color: var(--yellow); padding: 8px 18px; font-weight: 600;
 }
 .ask-form input::placeholder { color: var(--yellow); opacity: 0.75; }
-.ask-form .btn { min-height: 48px; padding: 8px 18px; }
+.ask-form .btn { min-height: 48px; padding: 8px 18px; flex: none; }
 .panel .error { margin: 0 22px 12px; padding: 10px 14px; border: 2px dashed var(--yellow); border-radius: 8px; font-size: 16px; }
 
 /* bottom strip: checks and actions */
