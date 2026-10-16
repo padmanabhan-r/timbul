@@ -8,7 +8,7 @@ For Sharmila, taking over on 15 Oct 2026. Deadline **18 Oct 2026** (no time zone
 |---|---|
 | 1. Live URL on Cloud Run / Firebase | **Done (16 Oct):** https://timbul-aibc-2026.web.app, Firebase Hosting in front of Cloud Run, project `timbul-aibc-2026`. |
 | 2. Demo video **under 3 minutes**, public link | **Too long: 3:26.** Uploaded to YouTube as **unlisted**: https://youtu.be/vN8Nwi9wOWY |
-| 3. Public GitHub repository | **Still private:** https://github.com/padmanabhan-r/timbul |
+| 3. Public GitHub repository | **Done (16 Oct):** public, with description, website and topics: https://github.com/padmanabhan-r/timbul |
 | 4. Deck as PDF | The deck is done (`deck/work/Timbul - AI Builder Cup.pptx`, 14 slides); the PDF isn't exported yet |
 | 5. Theme declaration | Sustainability & Social Impact (written in `SUBMISSION.md`) |
 
@@ -62,7 +62,7 @@ Then:
 ### 5. Export the deck to PDF
 Open `deck/work/Timbul - AI Builder Cup.pptx` in PowerPoint or Keynote and export it as a PDF. Check that slide 13 shows the live URL and the new video link. Then flip through it once: links, logos, nothing cut off.
 
-### 6. Make the repository public
+### 6. Make the repository public (done, 16 Oct)
 Before that, check that nothing secret is committed:
 ```bash
 git log -p | grep -iE "AIza|sk-or-|api_key\s*=" | head
