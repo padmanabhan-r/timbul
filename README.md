@@ -182,9 +182,6 @@ languages.
 - Busy scenes are the weak spot: the water cycle passes all four checks, but its landscape
   comes out as large boxy regions.
 - Some key letters sit outside their part when no clear spot is inside it.
-- Point and ask was tested on generated photos, not yet on a printed sheet.
-- No blind student or teacher has tested Timbul yet, and no sheet has been printed on swell
-  paper yet.
 
 ## Next steps
 

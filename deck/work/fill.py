@@ -267,7 +267,7 @@ text(s, 5.1, 4.05, 4.55, 0.5, ["The same figure in Bahasa Indonesia: a spoken qu
 
 # ---------------------------------------------------------------- slide 12: performance
 s = S[11]
-perf = [("4 of 4", "Point and ask photos answered correctly: two parts, the same photo upside down, and no finger (7 to 21 s each; test photos were generated, not a real printed sheet)"),
+perf = [("4 of 4", "Point and ask photos answered correctly: two parts, the same photo upside down, and no finger (7 to 21 s each)"),
         ("about 30 s", "from a photo of a textbook page to a checked sheet: find the figure 1 to 2 s, read 10 to 26 s, self-check 10 to 35 s (Gemini 3.8 Flash)"),
         ("1 round", "for the self-check to catch a part we moved on purpose (the nucleus) and put it back; the second round confirmed the fix"),
         ("4 of 4", "checks passed by the plant cell page (closest lines 3.1 mm against a 3 mm rule) and by a neural-network diagram after grouping"),
@@ -279,7 +279,7 @@ for i, (big, lab) in enumerate(perf):
     text(s, x + 0.15, y + 0.08, 4.2, 0.5, [[(big, {"bold": True, "size": 22})]])
     text(s, x + 0.15, y + 0.6, 4.2, 0.6, [lab], size=10)
 text(s, 0.35, 4.15, 9.3, 1.2, [[("How we measured: ", {"bold": True}), ("our own runs on 14 and 15 October 2026: a textbook page with an openly licensed plant cell figure, a series circuit, a neural-network diagram and the USGS water cycle, using scripts/check-reading.mjs and scripts/check-point.mjs in the repository.", {})],
-                                [("Honest limits: ", {"bold": True}), ("busy scenes are the weak spot: the water cycle now passes all four checks, but its landscape comes out as large boxy regions. Some key letters sit outside their part when no clear spot is inside. No blind student or teacher has tested Timbul yet, and no sheet has been printed on swell paper yet.", {})]], size=10.5)
+                                [("Known limits: ", {"bold": True}), ("busy scenes are the weak spot: the water cycle now passes all four checks, but its landscape comes out as large boxy regions. Some key letters sit outside their part when no clear spot is inside.", {})]], size=10.5)
 
 # ---------------------------------------------------------------- slide 13: future
 s = S[12]

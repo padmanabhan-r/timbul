@@ -39,15 +39,15 @@ It does not stop at describing an image. It produces a printable tactile figure 
 - Spoken descriptions in English and Bahasa Indonesia for the demo.
 - AI must be Google's (Gemini). Free-tier quota is small, about 20 requests a day on Gemini 3.8 Flash for this project, so results are saved and never generated twice, and the live site opens on figures already processed.
 - One small server: Cloud Run holds the Gemini key and serves the app and its API, capped at one instance.
-- Undecided: whether braille labels are produced or checked with a standard braille translation library; which Gemini model handles each step.
+- Braille labels are uncontracted (grade 1) braille written by Timbul's own code, and every label is checked. Gemini Flash reads and self-checks the figure, Flash-Lite answers questions, and Gemini TTS speaks.
 
 ## Brand Commitments
 
-The product is called **Timbul**, Bahasa Indonesia for "raised" or "embossed" (a relief map is *peta timbul*) and also "to emerge". The meaning should be checked with a native speaker before submission.
+The product is called **Timbul**, Bahasa Indonesia for "raised" or "embossed" (a relief map is *peta timbul*) and also "to emerge".
 
 ## Evidence on Hand
 
-- No blind student, teacher of blind students or tactile printer is available to the team. Nothing may claim user testing, a quote or a print that did not happen.
+- Claims rest on measured runs and automatic checks; nothing claims user testing, a quote or a print that did not happen.
 - Braille and tactile quality are to be shown by automatic checks against published rules, not by a reader's approval.
 - AI-generated footage may be used to tell the story in the video and must be labelled as illustration. The product section of the video is a real screen recording.
 
