@@ -16,7 +16,7 @@ For Sharmila, taking over on 15 Oct 2026. Deadline **18 Oct 2026** (no time zone
 
 ### 1. Deploy to Cloud Run (done, 16 Oct)
 Follow [DEPLOYMENT.md](../DEPLOYMENT.md), steps 1 to 6. Don't skip **step 8, the $1 budget alert**.
-- Get `GEMINI_API_KEY` and `OPENROUTER_API_KEY` from Padmanabhan by private message. Never put them in the repo or a group chat.
+- Get `GEMINI_API_KEY` from Padmanabhan by private message. Never put them in the repo or a group chat.
 - Step 6 is the check: add a page, open it as a student, ask a question.
 - Optional: step 7 gives the short address `timbul-aibc-2026.web.app`.
 

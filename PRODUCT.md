@@ -38,7 +38,7 @@ It does not stop at describing an image. It produces a printable tactile figure 
 - Voice exploration of a figure, with questions such as "what is left of the resistor?".
 - Spoken descriptions in English and Bahasa Indonesia for the demo.
 - AI must be Google's (Gemini). Free-tier quota is small, about 20 requests a day on Gemini 3.8 Flash for this project, so results are saved and never generated twice, and the live site opens on figures already processed.
-- One small server: Cloud Run holds the Gemini key and serves the app and its API, capped at one instance.
+- One small server: Cloud Run holds the Gemini key and serves the app and its API. It scales to zero, runs one instance during judging as a spending guard, and scales out with one flag.
 - Braille labels are uncontracted (grade 1) braille written by Timbul's own code, and every label is checked. Gemini Flash reads and self-checks the figure, Flash-Lite answers questions, and Gemini TTS speaks.
 
 ## Brand Commitments

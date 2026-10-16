@@ -17,13 +17,13 @@ about 45 minutes. Every command runs in a terminal from the repository root.
 |---|---|---|
 | The app and its API | **Cloud Run** | One container: the built web app and the `/api` server that calls Gemini. Scales to zero when nobody uses it. |
 | The class library | **Firestore** | The numbered sheets a teacher makes, so a student opens "sheet two" on her own phone. |
-| The API keys | **Secret Manager** | The Gemini key, and an optional OpenRouter key. They never go in the code or the image. |
+| The API keys | **Secret Manager** | The Gemini key. It never goes in the code or the image. |
 | The AI | **Gemini** (Gemini API) | Finds and reads the figure, checks its own drawing, answers questions, and speaks (Gemini TTS). |
 | A short web address | **Firebase Hosting** | `timbul-aibc-2026.web.app`, forwarding to Cloud Run. |
 
 **Cost: designed to be zero.** Everything stays inside Google Cloud's free tiers at hackathon traffic. Four
 safeguards keep it that way:
-- Cloud Run is capped at one instance.
+- Cloud Run runs one instance during judging. It scales to zero, and scaling out is one flag (`--max-instances`).
 - The app refuses Gemini calls past a daily limit.
 - A budget alert emails at $1 (₹100 on the live billing account).
 - There is a one-line off switch (Step 9).
@@ -50,11 +50,10 @@ Do not skip Step 8.
      project needs another ID, used in place of `timbul-aibc-2026` in every command below.
    - No billing account yet? Start the free trial at https://console.cloud.google.com/freetrial. It gives $300 of
      credit for 90 days and does not charge the card unless you upgrade to a paid account.
-3. **Get the keys.** Get them over a private message, never in the repo or a group chat:
+3. **Get the key.** Get it over a private message, never in the repo or a group chat:
    - `GEMINI_API_KEY`, from Google AI Studio. Create it in a project **without** billing, such as the
      `gen-lang-client-…` project AI Studio makes for you. A key in `timbul-aibc-2026`, which has billing, may be
      charged; a key in a project without billing stays on the free tier.
-   - `OPENROUTER_API_KEY` (optional), a backup route to the same Gemini models. The live deployment runs without it.
 4. **Accept the Firebase terms once,** for Step 7. Open https://console.firebase.google.com, choose **Create a
    project**, then **Add Firebase to Google Cloud project**, and pick `timbul-aibc-2026`. More than one project can
    be called "Timbul", so check the project ID. Accept the terms; Google Analytics is not needed. Until this is done,
@@ -75,14 +74,13 @@ gcloud firestore databases create --location=us-central1 --type=firestore-native
 
 Use the `(default)` database: the free tier only covers that one. If it says a database already exists, carry on.
 
-## Step 3: Store the keys in Secret Manager
+## Step 3: Store the key in Secret Manager
 
-Each command asks you to paste a key, then press Enter and Ctrl-D. Nothing is printed or saved in your shell
+The command asks you to paste the key, then press Enter and Ctrl-D. Nothing is printed or saved in your shell
 history. The newline from Enter does no harm: the server trims it.
 
 ```bash
 gcloud secrets create gemini-api-key --replication-policy=automatic --data-file=-
-gcloud secrets create openrouter-api-key --replication-policy=automatic --data-file=-   # optional
 ```
 
 To replace a key later, add a version to the same secret with
@@ -114,20 +112,19 @@ gcloud run deploy timbul \
   --set-env-vars TIMBUL_STORE=firestore,TIMBUL_PROVIDER=google,TIMBUL_CALLS_PER_DAY=1500,TIMBUL_CALLS_PER_HOUR=120
 ```
 
-- If you stored the OpenRouter key in Step 3, use
-  `--set-secrets GEMINI_API_KEY=gemini-api-key:latest,OPENROUTER_API_KEY=openrouter-api-key:latest` instead.
 - If it asks to create an Artifact Registry repository, answer **yes**.
 - It ends by printing the **Service URL**. The live one is `https://timbul-126958609171.us-central1.run.app`.
 
 What the settings do:
-- `TIMBUL_PROVIDER=google` sends every Gemini call to Google's Gemini API first, trying the next Gemini model when
-  one is busy. OpenRouter only answers when Google's free allowance runs out or Google is busy, and only if its key
-  is set. This keeps the judged deployment on Google's own platform.
+- `TIMBUL_PROVIDER=google` sends every Gemini call to Google's Gemini API, trying the next Gemini model when one
+  is busy.
 - `TIMBUL_STORE=firestore` keeps the class library in Firestore. Without it, sheets would vanish when the
   container restarts.
 - `TIMBUL_CALLS_PER_DAY` and `TIMBUL_CALLS_PER_HOUR` set the spending guard: past them the app politely refuses
   instead of calling Gemini. Speech is not counted, because it runs on the free Gemini TTS allowance and is cached.
-- `--max-instances 1` means Cloud Run can never scale up into a bill.
+- `--max-instances 1` is the spending guard for judging: Cloud Run can never scale up into a bill. For real use,
+  raise it and Cloud Run adds instances as schools come on; nothing else changes, because the class library is
+  already in Firestore rather than in the container.
 
 ## Step 6: Check it works
 
@@ -210,30 +207,10 @@ needs Step 7 again if `firebase.json` changes.
 
 ---
 
-## Testing copy on Vercel (not for judging)
-
-Padmanabhan keeps a testing copy at https://timbul.vercel.app. It runs the same code, with the API as one Vercel
-function (`api/[route].mjs`). The hackathon requires Google Cloud, so the URL submitted is always the Cloud Run or
-Firebase one.
-
-On Vercel the class library has no Firestore. Sheets are kept per server instance and in each browser, so opening
-a sheet by number from a second device can miss. To update it:
-
-```bash
-vercel deploy --prod --archive=tgz
-```
-
-The keys are set once:
-
-```bash
-vercel env add GEMINI_API_KEY production
-vercel env add OPENROUTER_API_KEY production
-```
-
 ## Running it on a laptop
 
 ```bash
-cp .env.example .env    # then paste the two keys into .env
+cp .env.example .env    # then paste the Gemini key into .env
 ./start.sh
 ```
 

@@ -138,7 +138,7 @@ every dot and runs every rule check, so what the student hears always matches wh
 | Find the figure, hear questions | **Gemini 3.5 Flash-Lite** | Locates the figure on the page; hears spoken questions and sheet numbers |
 | Read the figure, check the drawing, find the fingertip | **Gemini 3.8 Flash** | Reads the close-up into structured JSON; compares its drawing with the page; aligns a phone photo with the sheet |
 | Speak | **Gemini 3.8 Flash TTS** (voice Sulafat) | Every part name and answer, cached so each line is made once |
-| Serve the app and API | **Cloud Run** | One container (`Dockerfile`, `server/index.mjs`), capped at one instance, scales to zero |
+| Serve the app and API | **Cloud Run** | One container (`Dockerfile`, `server/index.mjs`); scales to zero, and up with `--max-instances` |
 | Class library | **Firestore** | Numbered sheets shared by class code across devices |
 | Keys | **Secret Manager** | The model keys, read by Cloud Run; never in code or the browser |
 | Short address | **Firebase Hosting** | Forwards to Cloud Run |
@@ -146,7 +146,8 @@ every dot and runs every rule check, so what the student hears always matches wh
 | App | **React, TypeScript, Vite** | Screen-reader labels, keyboard use, an offline copy in IndexedDB |
 
 Each call falls back through further Gemini models when one is busy, with timeouts, and a
-spending guard caps calls per visitor and per day. Every model is set by an environment
+spending guard caps calls per visitor and per day. During judging Cloud Run runs a single
+instance to keep the demo inside the free tier; scaling out is one flag. Every model is set by an environment
 variable, so moving to a stronger model is a configuration change: the prototype runs on
 Flash to stay within free allowances, and in real use figure reading and the self-check move
 to **Gemini Pro**.
@@ -165,7 +166,6 @@ cp .env.example .env   # then add your keys
 | Variable | For |
 |---|---|
 | `GEMINI_API_KEY` | Google's Gemini API: every model call |
-| `OPENROUTER_API_KEY` | Optional backup route to the same Gemini models |
 | `TIMBUL_READ_MODEL`, `TIMBUL_ASK_MODEL`, `TIMBUL_SPEAK_MODEL` | Optional: the model chain for each job, comma-separated, first choice first |
 | `TIMBUL_CALLS_PER_HOUR`, `TIMBUL_CALLS_PER_DAY` | Optional: the spending guard (defaults 120 and 1,500) |
 
@@ -173,20 +173,18 @@ The keys stay on the server and are never sent to the browser. To put it on Goog
 follow [DEPLOYMENT.md](DEPLOYMENT.md): Cloud Run, Firestore, Secret Manager and a $1 budget
 alert, in about 45 minutes.
 
-## Status and limits
+## Status
 
 Built and working end to end: find, read, self-check, the tactile sheet and its checks,
 teacher approval, the class library, exploring by touch and voice, Point and ask, and both
 languages.
 
-- Busy scenes are the weak spot: the water cycle passes all four checks, but its landscape
-  comes out as large boxy regions.
-- Some key letters sit outside their part when no clear spot is inside it.
-
 ## Next steps
 
 - **Stronger Gemini models.** Gemini Pro for reading and the self-check; Flash stays for
   quick questions and speech.
+- **Busier figures.** A simplify step that turns background scenery, such as the landscape
+  in a water cycle, into a few clear textures, and lead lines from each key letter to its part.
 - **Point and ask on real sheets.** A phone stand and printed swell-paper sheets, then live
   video instead of a photo.
 - **Test with real users.** Sessions with blind students and their teachers at special
