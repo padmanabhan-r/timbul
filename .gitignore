@@ -54,3 +54,7 @@ tsconfig.tsbuildinfo
 # Local notes
 HACKATHONS.md
 firebase-public/.gitkeep
+
+# Local tooling, not part of the project
+.claude/
+.githooks/
