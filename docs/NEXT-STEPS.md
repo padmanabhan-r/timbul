@@ -86,4 +86,3 @@ Afterwards, open every link in a private browser window to check that each one w
 - `.gitignore` has an uncommitted change that adds `.vercel` and `HACKATHONS.md`. Commit it if it's wanted.
 - `Submission Template _ AI Builder Cup.pptx` at the repo root is an untracked, identical copy of `deck/work/template.pptx`. Delete it, or leave it out of the commit.
 - The Vercel test copy (timbul.vercel.app) isn't part of the submission. Leave it unmentioned, or take it down, so the judges only see the Google Cloud deployment.
-- Commits are authored by a team member, with no AI attribution lines (see `CLAUDE.md`).

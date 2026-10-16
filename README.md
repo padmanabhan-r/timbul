@@ -215,6 +215,3 @@ node scripts/check-reading.mjs public/samples/plant-cell.png              # the 
 node scripts/check-reading.mjs public/samples/plant-cell.png --break <part-id>  # move a part of the last reading; the self-check should fix it
 npm run build
 ```
-
-Commits are authored by the team. `.githooks/commit-msg` removes AI co-author lines from
-commit messages (`git config core.hooksPath .githooks`).
