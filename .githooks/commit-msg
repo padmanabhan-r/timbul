@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Strip AI attribution trailers so commits credit only the human author.
+msg_file="$1"
+tmp="$(mktemp)"
+grep -v -i -E \
+  -e '^[[:space:]]*Co-Authored-By:.*(claude|anthropic)' \
+  -e '^[[:space:]]*Claude-Session:' \
+  -e 'Generated with \[?Claude Code' \
+  "$msg_file" > "$tmp"
+# Drop trailing blank lines left behind
+awk 'NF{for(i=0;i<blank;i++)print ""; blank=0; print; next} {blank++}' "$tmp" > "$msg_file"
+rm -f "$tmp"
