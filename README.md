@@ -5,10 +5,8 @@
 # Timbul
 
 [![Try it live](https://img.shields.io/badge/Try_it_live-ffcc00?style=for-the-badge&logo=firebase&logoColor=000000)](https://timbul-aibc-2026.web.app)
-[![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(3:26)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/vN8Nwi9wOWY)
+[![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(2:57)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/edAwixUyzHE)
 [![Product brief](https://img.shields.io/badge/Product_brief-000000?style=for-the-badge&logo=readme&logoColor=ffcc00)](PRODUCT.md)
-[![Pitch deck](https://img.shields.io/badge/Pitch_deck-000000?style=for-the-badge&logo=googleslides&logoColor=ffcc00)](deck/work/Timbul%20-%20AI%20Builder%20Cup.pptx)
-[![Deploy on Google Cloud](https://img.shields.io/badge/Deploy_on_Google_Cloud-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](DEPLOYMENT.md)
 
 [![AI Builder Cup 2026](https://img.shields.io/badge/AI_Builder_Cup-2026-000000?style=flat-square)](https://aibuildercup.com)
 ![Theme](https://img.shields.io/badge/theme-Sustainability_%26_Social_Impact-ffcc00?style=flat-square&labelColor=000000)
@@ -59,8 +57,7 @@ and Sharmila). Theme: **Sustainability & Social Impact**.
 
 **Live demo:** https://timbul-aibc-2026.web.app (Firebase Hosting in front of Cloud Run, on Google Cloud).
 
-**For the judges:** the submission text is in [SUBMISSION.md](SUBMISSION.md), the product
-brief in [PRODUCT.md](PRODUCT.md) and the deck in [deck/work](deck/work/).
+The product brief is in [PRODUCT.md](PRODUCT.md).
 
 ## The problem
 
@@ -76,7 +73,7 @@ never reach the classroom.
 
 ## Watch it
 
-<a href="https://youtu.be/vN8Nwi9wOWY"><img src="assets/video.jpg" alt="Watch the Timbul demo on YouTube" width="100%"></a>
+<a href="https://youtu.be/edAwixUyzHE"><img src="assets/video.jpg" alt="Watch the Timbul demo on YouTube" width="100%"></a>
 
 ## How it works
 
@@ -169,9 +166,9 @@ cp .env.example .env   # then add your keys
 | `TIMBUL_READ_MODEL`, `TIMBUL_ASK_MODEL`, `TIMBUL_SPEAK_MODEL` | Optional: the model chain for each job, comma-separated, first choice first |
 | `TIMBUL_CALLS_PER_HOUR`, `TIMBUL_CALLS_PER_DAY` | Optional: the spending guard (defaults 120 and 1,500) |
 
-The keys stay on the server and are never sent to the browser. To put it on Google Cloud,
-follow [DEPLOYMENT.md](DEPLOYMENT.md): Cloud Run, Firestore, Secret Manager and a $1 budget
-alert, in about 45 minutes.
+The keys stay on the server and are never sent to the browser. On Google Cloud the same
+server runs on Cloud Run from the `Dockerfile`, with `TIMBUL_STORE=firestore` for the class
+library and the Gemini key from Secret Manager; `firebase.json` puts Firebase Hosting in front.
 
 ## Status
 
@@ -200,9 +197,6 @@ languages.
 | `src/` | The app (React, TypeScript): screens, components, and the tactile engine in `src/lib/` |
 | `server/` | The API (`api.mjs`), the Gemini calls (`gemini.mjs`), the class library (`library.mjs`) and the Cloud Run server (`index.mjs`) |
 | `scripts/` | Pipeline checks: `check-reading.mjs <page.png>` runs find, read, draw and self-check on one image; `check-point.mjs <photo>` tests Point and ask |
-| `api/` | A serverless wrapper of the same API, used for a test copy (not the judged deployment) |
-| `deck/` | The pitch deck and the script that builds it |
-| `docs/` | The hackathon brief and the next steps to submission |
 | `Dockerfile` | The Cloud Run image |
 
 ```bash

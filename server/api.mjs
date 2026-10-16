@@ -1,5 +1,5 @@
-// Timbul's API, written once and served three ways: by the Vite dev server (vite.config.ts), by the Node server
-// that runs on Cloud Run (server/index.mjs), and by Vercel functions (api/[route].mjs). The Gemini key stays here.
+// Timbul's API, written once and served two ways: by the Vite dev server (vite.config.ts) and by the Node server
+// that runs on Cloud Run (server/index.mjs). The Gemini key stays here.
 
 import { readFigure, locateFigure, verifyFigure, pointAt, askFigure, speakText, hearSheet, loadKey, MODELS, PRIMARY, GeminiError } from "./gemini.mjs";
 import { listSheets, saveSheet, store } from "./library.mjs";

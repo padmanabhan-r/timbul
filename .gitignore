@@ -54,3 +54,13 @@ tsconfig.tsbuildinfo
 # Local notes
 HACKATHONS.md
 firebase-public/.gitkeep
+
+# Submission material and tooling, kept locally, not part of the app
+deck/
+docs/
+SUBMISSION.md
+Submission Template _ AI Builder Cup.pptx
+assets/src/
+api/
+vercel.json
+.vercelignore

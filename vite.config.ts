@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
-// @ts-expect-error plain ESM module shared with the Cloud Run server and the Vercel functions
+// @ts-expect-error plain ESM module shared with the Cloud Run server
 import { serve } from "./server/api.mjs";
 
 // Local API for development: the same handlers that run on Cloud Run, so the Gemini key never reaches the browser.
