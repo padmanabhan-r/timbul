@@ -57,7 +57,8 @@ export class GeminiError extends Error {
 
 async function generate(key, model, parts, schema, temperature = 0.2, timeout = 90_000) {
   let res;
-  // A busy model (503) or a dropped connection is retried; a quota refusal (429) is not.
+  // A dropped connection is retried. A busy model (503) is not: generateAny moves on to the next model, which is
+  // faster than waiting for this one.
   for (let attempt = 0; ; attempt++) {
     try {
       res = await fetch(`${API}/${model}:generateContent`, {
@@ -76,10 +77,6 @@ async function generate(key, model, parts, schema, temperature = 0.2, timeout = 
         continue;
       }
       throw new GeminiError(`${model}: ${e.name === "TimeoutError" ? "timed out" : String(e)}`, 502, "other");
-    }
-    if ((res.status === 503 || res.status === 500) && attempt < 2) {
-      await new Promise((r) => setTimeout(r, 3000 * (attempt + 1)));
-      continue;
     }
     break;
   }
@@ -129,15 +126,24 @@ async function openrouter(model, parts, schema, temperature, effort = "low", tim
   return JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, ""));
 }
 
+// Firebase Hosting gives a forwarded request 60 seconds, so a whole chain of models stops at 55.
+const DEADLINE = 55_000;
+
 /** Tries each model in turn; moves on when one is busy (503) or its free allowance is used up (429). */
 async function generateAny(key, models, parts, schema, temperature, fallback = [], effort = "low", timeout = 90_000) {
+  const end = Date.now() + DEADLINE;
   let last;
-  const routed = fallback.map((m) => "openrouter:" + m);
-  const order = !fallback.length ? models : PRIMARY === "openrouter" && loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]) ? [...routed, ...models] : [...models, ...routed];
+  // without an OpenRouter key its models are left out, so a busy Google chain ends on "busy", not on a key error
+  const router = Boolean(loadKey(process.cwd(), ["OPENROUTER_API_KEY", "VITE_OPENROUTER_API_KEY"]));
+  const routed = router ? fallback.map((m) => "openrouter:" + m) : [];
+  const order = PRIMARY === "openrouter" ? [...routed, ...models] : [...models, ...routed];
   for (const model of order) {
+    const left = end - Date.now();
+    if (left < 5_000) break;
+    const wait = Math.min(timeout, left);
     if (model.startsWith("openrouter:")) {
       try {
-        return { result: await openrouter(model.slice(11), parts, schema, temperature, effort, timeout), model };
+        return { result: await openrouter(model.slice(11), parts, schema, temperature, effort, wait), model };
       } catch (e) {
         last = e;
         console.warn(`[timbul] ${model} failed (${e.status}); trying the next model`);
@@ -145,7 +151,7 @@ async function generateAny(key, models, parts, schema, temperature, fallback = [
       }
     }
     try {
-      return { result: await generate(key, model, parts, schema, temperature, timeout), model };
+      return { result: await generate(key, model, parts, schema, temperature, wait), model };
     } catch (e) {
       last = e;
       const moveOn = e instanceof GeminiError && (e.kind === "quota" || e.kind === "model" || e.status === 503 || e.status === 500 || e.status === 502);
@@ -153,6 +159,8 @@ async function generateAny(key, models, parts, schema, temperature, fallback = [
       console.warn(`[timbul] ${model} unavailable (${e.status}); trying the next model`);
     }
   }
+  // the app tells the user Gemini is busy when the message says "high demand"
+  if (!last || [500, 502, 503].includes(last.status)) throw new GeminiError("Gemini is under high demand right now", 503, "other");
   throw last;
 }
 

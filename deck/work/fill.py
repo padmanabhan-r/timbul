@@ -298,7 +298,7 @@ for i, (h, d) in enumerate(fut, 1):
 # ---------------------------------------------------------------- slide 14: links
 s = S[13]
 tb = [sh for sh in s.shapes if sh.has_text_frame and sh.text_frame.text.strip()][0]
-links = {"GitHub Public Repository": "github.com/padmanabhan-r/timbul", "Demo Video Link (3 Minutes)": "youtu.be/vN8Nwi9wOWY", "Final Product Link": "to be added after deployment"}
+links = {"GitHub Public Repository": "github.com/padmanabhan-r/timbul", "Demo Video Link (3 Minutes)": "youtu.be/vN8Nwi9wOWY", "Final Product Link": "timbul-aibc-2026.web.app"}
 for p in tb.text_frame.paragraphs:
     for key, val in links.items():
         if p.text.strip().startswith(key):

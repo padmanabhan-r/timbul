@@ -5,7 +5,7 @@ Ready to paste into the AI Builder Cup form. Fill the three links on the day.
 **Project name:** Timbul
 **Team:** HammerLimbo Tech (leader: Padmanabhan Rajendrakumar)
 **Theme:** Sustainability & Social Impact
-**Live URL:** _Cloud Run or Firebase Hosting address from DEPLOYMENT.md_
+**Live URL:** https://timbul-aibc-2026.web.app
 **Demo video:** https://youtu.be/vN8Nwi9wOWY
 **Repository:** https://github.com/padmanabhan-r/timbul
 

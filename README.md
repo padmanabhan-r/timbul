@@ -4,6 +4,7 @@
 
 # Timbul
 
+[![Try it live](https://img.shields.io/badge/Try_it_live-ffcc00?style=for-the-badge&logo=firebase&logoColor=000000)](https://timbul-aibc-2026.web.app)
 [![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(3:26)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/vN8Nwi9wOWY)
 [![Product brief](https://img.shields.io/badge/Product_brief-000000?style=for-the-badge&logo=readme&logoColor=ffcc00)](PRODUCT.md)
 [![Pitch deck](https://img.shields.io/badge/Pitch_deck-000000?style=for-the-badge&logo=googleslides&logoColor=ffcc00)](deck/work/Timbul%20-%20AI%20Builder%20Cup.pptx)
@@ -55,6 +56,8 @@ the same figure by voice, in English or Bahasa Indonesia.
 An entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com)
 (Hack2skill × Google Cloud, JAPAC), by **team HammerLimbo Tech** (Padmanabhan Rajendrakumar
 and Sharmila). Theme: **Sustainability & Social Impact**.
+
+**Live demo:** https://timbul-aibc-2026.web.app (Firebase Hosting in front of Cloud Run, on Google Cloud).
 
 **For the judges:** the submission text is in [SUBMISSION.md](SUBMISSION.md), the product
 brief in [PRODUCT.md](PRODUCT.md) and the deck in [deck/work](deck/work/).

@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Delegated: React with Vite and plain CSS, Firebase Hosting, Firestore, and Firebase AI Logic calling the Gemini Developer API. Chosen because the team is staying on Firebase's free plan, which rules out Cloud Run and server code, and because the hackathon requires Google models and Firebase or Cloud Run hosting.
+Delegated: React with Vite and plain CSS in the browser; a small Node API on Cloud Run that calls the Gemini API; Firestore for the class library, Secret Manager for the key, and Firebase Hosting for the short address. Chosen because the hackathon requires Google models and Firebase or Cloud Run hosting, because a server keeps the key out of the browser, and because everything fits Google Cloud's free allowances (one Cloud Run instance that scales to zero).
 
 ## Users
 
@@ -38,7 +38,7 @@ It does not stop at describing an image. It produces a printable tactile figure 
 - Voice exploration of a figure, with questions such as "what is left of the resistor?".
 - Spoken descriptions in English and Bahasa Indonesia for the demo.
 - AI must be Google's (Gemini). Free-tier quota is small, about 20 requests a day on Gemini 3.8 Flash for this project, so results are saved and never generated twice, and the live site opens on figures already processed.
-- No server code: everything runs in the browser against Firebase.
+- One small server: Cloud Run holds the Gemini key and serves the app and its API, capped at one instance.
 - Undecided: whether braille labels are produced or checked with a standard braille translation library; which Gemini model handles each step.
 
 ## Brand Commitments

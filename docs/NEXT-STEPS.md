@@ -6,7 +6,7 @@ For Sharmila, taking over on 15 Oct 2026. Deadline **18 Oct 2026** (no time zone
 
 | Artifact the rules require | Status |
 |---|---|
-| 1. Live URL on Cloud Run / Firebase | **Not deployed yet.** The only live copy is a Vercel test at timbul.vercel.app, which the judges won't accept. |
+| 1. Live URL on Cloud Run / Firebase | **Done (16 Oct):** https://timbul-aibc-2026.web.app, Firebase Hosting in front of Cloud Run, project `timbul-aibc-2026`. |
 | 2. Demo video **under 3 minutes**, public link | **Too long: 3:26.** Uploaded to YouTube as **unlisted**: https://youtu.be/vN8Nwi9wOWY |
 | 3. Public GitHub repository | **Still private:** https://github.com/padmanabhan-r/timbul |
 | 4. Deck as PDF | The deck is done (`deck/work/Timbul - AI Builder Cup.pptx`, 14 slides); the PDF isn't exported yet |
@@ -14,13 +14,13 @@ For Sharmila, taking over on 15 Oct 2026. Deadline **18 Oct 2026** (no time zone
 
 ## In order
 
-### 1. Deploy to Cloud Run (about 45 minutes)
+### 1. Deploy to Cloud Run (done, 16 Oct)
 Follow [DEPLOYMENT.md](../DEPLOYMENT.md), steps 1 to 6. Don't skip **step 8, the $1 budget alert**.
 - Get `GEMINI_API_KEY` and `OPENROUTER_API_KEY` from Padmanabhan by private message. Never put them in the repo or a group chat.
 - Step 6 is the check: add a page, open it as a student, ask a question.
-- Optional: step 7 gives the short address `timbul-aibc.web.app`.
+- Optional: step 7 gives the short address `timbul-aibc-2026.web.app`.
 
-### 2. Put the live URL everywhere
+### 2. Put the live URL everywhere (done, 16 Oct)
 Use the Firebase address if you did step 7, otherwise the Cloud Run URL.
 - `SUBMISSION.md`: the **Live URL** line.
 - `README.md`: the **Live demo** line.

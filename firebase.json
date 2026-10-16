@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "public": "firebase-public",
+    "ignore": ["**/.*"],
+    "rewrites": [{ "source": "**", "run": { "serviceId": "timbul", "region": "us-central1" } }]
+  }
+}
