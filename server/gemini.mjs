@@ -86,6 +86,9 @@ async function generate(key, model, parts, schema, temperature = 0.2, timeout = 
     throw new GeminiError(body.slice(0, 600), res.status, kind);
   }
   const data = JSON.parse(body);
+  // tokens per call, so the cost of one figure can be measured from the logs
+  const u = data.usageMetadata;
+  if (u) console.log(`[timbul] ${model} tokens: in ${u.promptTokenCount ?? 0}, out ${u.candidatesTokenCount ?? 0}, thinking ${u.thoughtsTokenCount ?? 0}`);
   const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("") || "";
   if (!text) throw new GeminiError("Gemini returned an empty answer", 502, "other");
   return JSON.parse(text);
