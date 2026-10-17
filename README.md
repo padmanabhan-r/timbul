@@ -6,7 +6,6 @@
 
 [![Try it live](https://img.shields.io/badge/Try_it_live-ffcc00?style=for-the-badge&logo=firebase&logoColor=000000)](https://timbul-aibc-2026.web.app)
 [![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(2:40)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/8Zh9jkysKew)
-[![Product brief](https://img.shields.io/badge/Product_brief-000000?style=for-the-badge&logo=readme&logoColor=ffcc00)](PRODUCT.md)
 
 [![AI Builder Cup 2026](https://img.shields.io/badge/AI_Builder_Cup-2026-000000?style=flat-square)](https://aibuildercup.com)
 ![Theme](https://img.shields.io/badge/theme-Sustainability_%26_Social_Impact-ffcc00?style=flat-square&labelColor=000000)
@@ -58,8 +57,7 @@ An entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com)
 and Sharmila). Theme: **Sustainability & Social Impact**.
 
 **For the judges:** the live app is at https://timbul-aibc-2026.web.app (Firebase Hosting in
-front of Cloud Run, on Google Cloud), the 2:40 demo at https://youtu.be/8Zh9jkysKew, and the
-product brief in [PRODUCT.md](PRODUCT.md).
+front of Cloud Run, on Google Cloud), and the 2:40 demo at https://youtu.be/8Zh9jkysKew.
 
 ## The problem
 
