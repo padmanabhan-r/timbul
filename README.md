@@ -12,6 +12,7 @@
 ![Theme](https://img.shields.io/badge/theme-Sustainability_%26_Social_Impact-ffcc00?style=flat-square&labelColor=000000)
 ![Status](https://img.shields.io/badge/status-working_end_to_end-ffcc00?style=flat-square&labelColor=000000)
 ![Languages](https://img.shields.io/badge/languages-English_%C2%B7_Bahasa_Indonesia-ffcc00?style=flat-square&labelColor=000000)
+[![Release](https://img.shields.io/github/v/release/padmanabhan-r/timbul?style=flat-square&color=ffcc00&labelColor=000000)](https://github.com/padmanabhan-r/timbul/releases/latest)
 
 <br />
 
@@ -47,7 +48,7 @@ Timbul is for blind and low-vision students, and the teachers who make their mat
 A teacher photographs a textbook page. Gemini finds the figure, reads it, and checks its
 own drawing against the page. Timbul's code draws a raised-dot sheet with braille labels,
 ready to print on swell paper. The student feels the sheet, says its number, and explores
-the same figure by voice, in English or Bahasa Indonesia.
+the same figure by voice, in English or Bahasa Indonesia, with more languages coming soon.
 
 *Timbul* is Bahasa Indonesia for "raised", and also "to emerge".
 
@@ -55,9 +56,9 @@ An entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com)
 (Hack2skill × Google Cloud, JAPAC), by **team HammerLimbo Tech** (Padmanabhan Rajendrakumar
 and Sharmila). Theme: **Sustainability & Social Impact**.
 
-**Live demo:** https://timbul-aibc-2026.web.app (Firebase Hosting in front of Cloud Run, on Google Cloud).
-
-The product brief is in [PRODUCT.md](PRODUCT.md).
+**For the judges:** the live app is at https://timbul-aibc-2026.web.app (Firebase Hosting in
+front of Cloud Run, on Google Cloud), the 2:40 demo at https://youtu.be/8Zh9jkysKew, and the
+product brief in [PRODUCT.md](PRODUCT.md).
 
 ## The problem
 
@@ -144,10 +145,10 @@ every dot and runs every rule check, so what the student hears always matches wh
 
 Each call falls back through further Gemini models when one is busy, with timeouts, and a
 spending guard caps calls per visitor and per day. During judging Cloud Run runs a single
-instance to keep the demo inside the free tier; scaling out is one flag. Every model is set by an environment
-variable, so moving to a stronger model is a configuration change: the prototype runs on
-Flash to stay within free allowances, and in real use figure reading and the self-check move
-to **Gemini Pro**.
+instance to keep the demo inside the free tier; scaling out is one flag. Every model is set
+by an environment variable, so moving to a stronger model is a configuration change: the
+prototype runs on Flash to stay within free allowances, and in real use figure reading and
+the self-check move to **Gemini Pro**.
 
 ## Run it yourself
 
@@ -165,6 +166,10 @@ cp .env.example .env   # then add your keys
 | `GEMINI_API_KEY` | Google's Gemini API: every model call |
 | `TIMBUL_READ_MODEL`, `TIMBUL_ASK_MODEL`, `TIMBUL_SPEAK_MODEL` | Optional: the model chain for each job, comma-separated, first choice first |
 | `TIMBUL_CALLS_PER_HOUR`, `TIMBUL_CALLS_PER_DAY` | Optional: the spending guard (defaults 120 and 1,500) |
+| `TIMBUL_VOICE` | Optional: the Gemini TTS voice (default Sulafat) |
+| `TIMBUL_STORE` | Optional: `firestore` keeps the class library in Firestore (the default on Cloud Run); `file` keeps it on disk |
+| `TIMBUL_DATA_DIR`, `TIMBUL_CACHE_DIR` | Optional: where the on-disk library and the spoken-line cache live (default `.cache/`) |
+| `PORT` | Optional: the port (5173 for `./start.sh`, 8080 for the Cloud Run server) |
 
 The keys stay on the server and are never sent to the browser. On Google Cloud the same
 server runs on Cloud Run from the `Dockerfile`, with `TIMBUL_STORE=firestore` for the class
@@ -184,11 +189,13 @@ languages.
   in a water cycle, into a few clear textures, and lead lines from each key letter to its part.
 - **Point and ask on real sheets.** A phone stand and printed swell-paper sheets, then live
   video instead of a photo.
-- **Test with real users.** Sessions with blind students and their teachers at special
-  schools in Indonesia and India.
-- **More languages and contracted braille.** Tamil, Thai and Vietnamese next.
-- **Shared across schools.** A national library, so each textbook figure is made once for
-  every school.
+- **Test with real users.** Our first stop is Little Flower Convent Higher Secondary School
+  for the Blind in Chennai: sessions with their students and teachers to learn how Timbul
+  can help them, and what to improve.
+- **More languages, coming soon.** Tamil, Thai and Vietnamese next, then more, and contracted
+  braille.
+- **Shared across schools.** One library shared between schools, so each textbook figure is
+  made once for every school that uses that book.
 
 ## Repository
 
@@ -196,8 +203,12 @@ languages.
 |---|---|
 | `src/` | The app (React, TypeScript): screens, components, and the tactile engine in `src/lib/` |
 | `server/` | The API (`api.mjs`), the Gemini calls (`gemini.mjs`), the class library (`library.mjs`) and the Cloud Run server (`index.mjs`) |
-| `scripts/` | Pipeline checks: `check-reading.mjs <page.png>` runs find, read, draw and self-check on one image; `check-point.mjs <photo>` tests Point and ask |
+| `scripts/` | Pipeline checks: `check-reading.mjs <page.png>` runs find, read, draw and self-check on one image; `check-point.mjs <photo>` tests Point and ask; `make-samples.mjs` (`npm run samples`) rebuilds the built-in samples |
+| `public/samples/` | Sample pages to try: a plant cell and a series circuit |
+| `assets/` | The banner, logos and screenshots used in this README |
+| `start.sh` | Local start: installs on first run, then serves the app on port 5173 |
 | `Dockerfile` | The Cloud Run image |
+| `firebase.json` | Firebase Hosting, forwarding every request to the Cloud Run service |
 
 ```bash
 node scripts/check-reading.mjs public/samples/plant-cell.png              # the full pipeline, overlays in .cache/check/
