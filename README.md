@@ -11,7 +11,7 @@
 ![Theme](https://img.shields.io/badge/theme-Sustainability_%26_Social_Impact-ffcc00?style=flat-square&labelColor=000000)
 ![Status](https://img.shields.io/badge/status-working_end_to_end-ffcc00?style=flat-square&labelColor=000000)
 ![Languages](https://img.shields.io/badge/languages-English_%C2%B7_Bahasa_Indonesia-ffcc00?style=flat-square&labelColor=000000)
-[![Release](https://img.shields.io/badge/release-v1.0.0-ffcc00?style=flat-square&labelColor=000000)](https://github.com/padmanabhan-r/timbul/releases/tag/v1.0.0)
+[![Release](https://img.shields.io/badge/release-v1.0.1-ffcc00?style=flat-square&labelColor=000000)](https://github.com/padmanabhan-r/timbul/releases/tag/v1.0.1)
 [![License: MIT](https://img.shields.io/badge/license-MIT-ffcc00?style=flat-square&labelColor=000000)](LICENSE)
 
 <br />
