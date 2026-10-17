@@ -13,6 +13,7 @@
 ![Status](https://img.shields.io/badge/status-working_end_to_end-ffcc00?style=flat-square&labelColor=000000)
 ![Languages](https://img.shields.io/badge/languages-English_%C2%B7_Bahasa_Indonesia-ffcc00?style=flat-square&labelColor=000000)
 [![Release](https://img.shields.io/github/v/release/padmanabhan-r/timbul?style=flat-square&color=ffcc00&labelColor=000000)](https://github.com/padmanabhan-r/timbul/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-ffcc00?style=flat-square&labelColor=000000)](LICENSE)
 
 <br />
 
@@ -215,3 +216,7 @@ node scripts/check-reading.mjs public/samples/plant-cell.png              # the 
 node scripts/check-reading.mjs public/samples/plant-cell.png --break <part-id>  # move a part of the last reading; the self-check should fix it
 npm run build
 ```
+
+## License
+
+[MIT](LICENSE), © 2026 Padmanabhan Rajendrakumar and Sharmila.
