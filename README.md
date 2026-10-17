@@ -5,7 +5,7 @@
 # Timbul
 
 [![Try it live](https://img.shields.io/badge/Try_it_live-ffcc00?style=for-the-badge&logo=firebase&logoColor=000000)](https://timbul-aibc-2026.web.app)
-[![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(2:57)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/edAwixUyzHE)
+[![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(2:40)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/8Zh9jkysKew)
 [![Product brief](https://img.shields.io/badge/Product_brief-000000?style=for-the-badge&logo=readme&logoColor=ffcc00)](PRODUCT.md)
 
 [![AI Builder Cup 2026](https://img.shields.io/badge/AI_Builder_Cup-2026-000000?style=flat-square)](https://aibuildercup.com)
@@ -73,7 +73,7 @@ never reach the classroom.
 
 ## Watch it
 
-<a href="https://youtu.be/edAwixUyzHE"><img src="assets/video.jpg" alt="Watch the Timbul demo on YouTube" width="100%"></a>
+<a href="https://youtu.be/8Zh9jkysKew"><img src="assets/video.jpg" alt="Watch the Timbul demo on YouTube" width="100%"></a>
 
 ## How it works
 
