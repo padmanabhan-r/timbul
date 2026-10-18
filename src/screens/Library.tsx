@@ -144,7 +144,7 @@ export function Library({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
           </form>
         </section>
         <ul className="sheets" aria-label={lang === "id" ? "Gambar" : "Figures"}>
-          {figures.map((f) => <Card key={f.id} saved={f} lang={lang} onDelete={f.sample ? undefined : () => remove(f)} />)}
+          {figures.map((f) => <Card key={f.id} saved={f} lang={lang} onDelete={f.sample || cls === "demo" ? undefined : () => remove(f)} />)}
         </ul>
         <section className="about" aria-label={lang === "id" ? "Cara kerja Timbul" : "How Timbul works"}>
           <div>

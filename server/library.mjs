@@ -105,6 +105,8 @@ export async function saveSheet(raw, sheet) {
 /** Removes a sheet. Its number is not given out again, so a printed sheet never opens a different figure. */
 export async function deleteSheet(raw, id) {
   const code = classCode(raw);
+  // The shared "demo" class is what every visitor opens first, so its sheets cannot be deleted; other classes can.
+  if (code === "demo") throw Object.assign(new Error("The demo library is read-only. Use your own class code to delete sheets."), { status: 403 });
   if (typeof id !== "string" || !/^[\w-]{1,40}$/.test(id)) throw Object.assign(new Error("Not a sheet"), { status: 400 });
   if (useFirestore) {
     await (await firestore()).collection("classes").doc(code).collection("sheets").doc(id).delete();
