@@ -5,7 +5,7 @@
 # Timbul
 
 [![Try it live](https://img.shields.io/badge/Try_it_live-ffcc00?style=for-the-badge&logo=firebase&logoColor=000000)](https://timbul-aibc-2026.web.app)
-[![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(2:40)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/8Zh9jkysKew)
+[![Watch the demo](https://img.shields.io/badge/Watch_the_demo_(2:38)-c8281c?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/rVD1xW4WoBU)
 
 [![AI Builder Cup 2026](https://img.shields.io/badge/AI_Builder_Cup-2026-000000?style=flat-square)](https://aibuildercup.com)
 ![Theme](https://img.shields.io/badge/theme-Sustainability_%26_Social_Impact-ffcc00?style=flat-square&labelColor=000000)
@@ -57,7 +57,7 @@ An entry for the [Google Cloud AI Builder Cup 2026](https://aibuildercup.com)
 and Sharmila). Theme: **Sustainability & Social Impact**.
 
 **For the judges:** the live app is at https://timbul-aibc-2026.web.app (Firebase Hosting in
-front of Cloud Run, on Google Cloud), and the 2:40 demo at https://youtu.be/8Zh9jkysKew.
+front of Cloud Run, on Google Cloud), and the 2:38 demo at https://youtu.be/rVD1xW4WoBU.
 
 ## The problem
 
@@ -73,7 +73,7 @@ never reach the classroom.
 
 ## Watch it
 
-<a href="https://youtu.be/8Zh9jkysKew"><img src="assets/video.jpg" alt="Watch the Timbul demo on YouTube" width="100%"></a>
+<a href="https://youtu.be/rVD1xW4WoBU"><img src="assets/video.jpg" alt="Watch the Timbul demo on YouTube" width="100%"></a>
 
 ## How it works
 
