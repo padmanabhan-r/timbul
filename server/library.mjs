@@ -31,9 +31,17 @@ async function firestore() {
   return db;
 }
 
+// Firestore cannot store arrays of arrays, and a polygon outline is one ([[x, y], …]), so the figure is kept as
+// JSON text. Sheets saved before this change hold the figure as an object and are read as they are.
+function fromDoc(data) {
+  if (typeof data.figureJson !== "string") return data;
+  const { figureJson, ...rest } = data;
+  return { ...rest, figure: JSON.parse(figureJson) };
+}
+
 async function fsList(code) {
   const snap = await (await firestore()).collection("classes").doc(code).collection("sheets").orderBy("number", "desc").limit(MAX_SHEETS).get();
-  return snap.docs.map((d) => d.data());
+  return snap.docs.map((d) => fromDoc(d.data()));
 }
 
 async function fsSave(code, sheet) {
@@ -48,7 +56,8 @@ async function fsSave(code, sheet) {
       tx.set(cls, { next: number + 1, updatedAt: Date.now() }, { merge: true });
     }
     const saved = { ...sheet, number };
-    tx.set(ref, saved);
+    const { figure, ...rest } = saved;
+    tx.set(ref, { ...rest, figureJson: JSON.stringify(figure) });
     return saved;
   });
 }
