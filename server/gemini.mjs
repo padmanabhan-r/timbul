@@ -341,8 +341,9 @@ export async function verifyFigure(key, { image, mime, drawing, figure, checks =
     { inlineData: { mimeType: "image/png", data: drawing } },
     { text: `${VERIFY_PROMPT}\n\nThe reading:\n${JSON.stringify(reading)}\n\nThe rule checks:\n${checks.map((c) => `- ${c.name}: ${c.pass ? "pass" : "FAIL"} (${c.value})`).join("\n") || "- not run"}` },
   ];
-  // The check is a safeguard, not a gate: two models at most, 45 seconds each, then the teacher's own look decides.
-  const { result, model } = await generateAny(key, MODELS.read.slice(0, 2), parts, VERIFY_SCHEMA, 0.1, FALLBACK.read.slice(0, 1), "low", 45_000);
+  // The check is a safeguard, not a gate: two models at most, 26 seconds each so the second still fits inside the
+  // 55-second limit when the first stalls, then the teacher's own look decides.
+  const { result, model } = await generateAny(key, MODELS.read.slice(0, 2), parts, VERIFY_SCHEMA, 0.1, FALLBACK.read.slice(0, 1), "low", 26_000);
   return { ...applyReview(figure, result), model };
 }
 
