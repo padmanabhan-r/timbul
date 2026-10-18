@@ -64,3 +64,5 @@ assets/src/
 api/
 vercel.json
 .vercelignore
+deployment.instructions.md
+

@@ -75,3 +75,8 @@ export async function listLibrary(cls: string): Promise<SavedFigure[]> {
 export function saveToLibrary(cls: string, sheet: SavedFigure) {
   return post<SavedFigure>("/api/library", { class: cls, sheet });
 }
+
+export async function deleteFromLibrary(cls: string, id: string) {
+  const res = await fetch(`/api/library?class=${encodeURIComponent(cls)}&id=${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => null);
+  if (!res?.ok) throw new ApiError("Could not delete the sheet.", "library", res?.status ?? 0);
+}

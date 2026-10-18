@@ -2,7 +2,7 @@
 // that runs on Cloud Run (server/index.mjs). The Gemini key stays here.
 
 import { readFigure, locateFigure, verifyFigure, pointAt, askFigure, speakText, hearSheet, loadKey, MODELS, PRIMARY, GeminiError } from "./gemini.mjs";
-import { listSheets, saveSheet, store } from "./library.mjs";
+import { listSheets, saveSheet, deleteSheet, store } from "./library.mjs";
 
 const key = loadKey();
 const json = (status, data) => ({ status, type: "application/json", body: JSON.stringify(data) });
@@ -48,7 +48,8 @@ export async function handle(route, method, query, body, ip = "local") {
     if (route === "library") {
       if (method === "GET") return json(200, { sheets: await listSheets(query.class) });
       if (method === "POST") return json(200, await saveSheet(body.class, body.sheet));
-      return json(405, { error: "GET or POST" });
+      if (method === "DELETE") return json(200, await deleteSheet(query.class, query.id));
+      return json(405, { error: "GET, POST or DELETE" });
     }
     const fn = ROUTES[route];
     if (!fn) return json(404, { error: "No such route" });

@@ -101,3 +101,17 @@ export async function saveSheet(raw, sheet) {
   writeFileSync(file(code), JSON.stringify(cls));
   return saved;
 }
+
+/** Removes a sheet. Its number is not given out again, so a printed sheet never opens a different figure. */
+export async function deleteSheet(raw, id) {
+  const code = classCode(raw);
+  if (typeof id !== "string" || !/^[\w-]{1,40}$/.test(id)) throw Object.assign(new Error("Not a sheet"), { status: 400 });
+  if (useFirestore) {
+    await (await firestore()).collection("classes").doc(code).collection("sheets").doc(id).delete();
+    return { deleted: id };
+  }
+  const cls = readClass(code);
+  const sheets = cls.sheets.filter((s) => s.id !== id);
+  if (sheets.length !== cls.sheets.length) writeFileSync(file(code), JSON.stringify({ ...cls, sheets }));
+  return { deleted: id };
+}

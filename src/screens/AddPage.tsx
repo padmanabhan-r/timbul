@@ -9,7 +9,16 @@ import { DotMark, TopBar, Checks } from "../components/Bits";
 
 type Step = "pick" | "reading" | "checking" | "drawing" | "done" | "error";
 
-const STAGES = ["Found the figure", "Read every part", "Gemini checked its drawing", "Braille labels", "Tactile rules checked", "Ready for approval"];
+const STAGES: Record<Lang, string[]> = {
+  en: ["Found the figure", "Read every part", "Gemini checked its drawing", "Braille labels", "Tactile rules checked", "Ready for approval"],
+  id: ["Gambar ditemukan", "Setiap bagian dibaca", "Gemini memeriksa gambarnya", "Label braille", "Aturan taktil diperiksa", "Siap disetujui"],
+};
+// Kept in both languages, so a message already on screen follows the language switch.
+const ERRORS = {
+  photo: { en: "Choose a photo or scan of the page (JPEG or PNG).", id: "Pilih foto atau pindaian halaman (JPEG atau PNG)." },
+  none: { en: "Timbul could not find a diagram on this page. Try a closer photo of just the figure.", id: "Timbul tidak menemukan diagram di halaman ini. Coba foto yang lebih dekat, hanya gambarnya saja." },
+  other: { en: "Something went wrong. Try again.", id: "Terjadi kesalahan. Coba lagi." },
+};
 const ROUNDS = 2;
 
 /** The draft drawing over the page, as a PNG, for Gemini to compare with the page. */
@@ -63,7 +72,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
   const [saved, setSaved] = useState<SavedFigure | null>(null);
   const [stage, setStage] = useState(0);
   const [reveal, setReveal] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Record<Lang, string> | null>(null);
   const [over, setOver] = useState(false);
   const [draft, setDraft] = useState<SavedFigure | null>(null);
   const [round, setRound] = useState(0);
@@ -95,7 +104,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
 
   const start = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      setError("Choose a photo or scan of the page (JPEG or PNG).");
+      setError(ERRORS.photo);
       setStep("error");
       return;
     }
@@ -109,7 +118,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
       // First a quick look for where the figure is, then the full reading on a close-up of it.
       const where = await locateFigure(p.base64, "image/jpeg").catch(() => null);
       if (where && !where.found) {
-        setError("Timbul could not find a diagram on this page. Try a closer photo of just the figure.");
+        setError(ERRORS.none);
         setStep("error");
         return;
       }
@@ -118,7 +127,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
       setStage(1);
       const figure = await readPage(shot.base64, "image/jpeg");
       if (!figure.found || !figure.parts.length) {
-        setError("Timbul could not find a diagram on this page. Try a closer photo of just the figure.");
+        setError(ERRORS.none);
         setStep("error");
         return;
       }
@@ -132,7 +141,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
       setSaved(stored);
       setStep("drawing");
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Something went wrong. Try again.");
+      setError(e instanceof ApiError ? { en: e.message, id: e.message } : ERRORS.other);
       setStep("error");
     }
   };
@@ -172,7 +181,7 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
 
   return (
     <div className="feed">
-      <TopBar title="Add a page" lang={lang} setLang={setLang} />
+      <TopBar title={lang === "id" ? "Tambah halaman" : "Add a page"} lang={lang} setLang={setLang} />
       <div className="perf" aria-hidden="true" />
       <main className="add">
         {step === "pick" || (step === "error" && !photo) ? (
@@ -183,11 +192,11 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
             onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(e.dataTransfer.files); }}
           >
             <div>
-              <h2>Add a textbook page</h2>
-              <p>A photo or scan of one page with a diagram on it. Timbul finds the figure and draws it for touch.</p>
+              <h2>{lang === "id" ? "Tambah halaman buku pelajaran" : "Add a textbook page"}</h2>
+              <p>{lang === "id" ? "Foto atau pindaian satu halaman yang berisi diagram. Timbul menemukan gambarnya dan menggambarnya untuk diraba." : "A photo or scan of one page with a diagram on it. Timbul finds the figure and draws it for touch."}</p>
               <div className="btns">
-                <button className="btn" type="button" onClick={(e) => { e.preventDefault(); fileRef.current?.click(); }}>Choose a photo</button>
-                <button className="btn ghost" type="button" onClick={(e) => { e.preventDefault(); cameraRef.current?.click(); }}>Take a photo</button>
+                <button className="btn" type="button" onClick={(e) => { e.preventDefault(); fileRef.current?.click(); }}>{lang === "id" ? "Pilih foto" : "Choose a photo"}</button>
+                <button className="btn ghost" type="button" onClick={(e) => { e.preventDefault(); cameraRef.current?.click(); }}>{lang === "id" ? "Ambil foto" : "Take a photo"}</button>
               </div>
               <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => onFiles(e.target.files)} />
               <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFiles(e.target.files)} />
@@ -195,47 +204,47 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
           </label>
         ) : (
           <>
-            <div className="page-photo">{photo && <img src={photo.dataUrl} alt="The uploaded textbook page" />}</div>
+            <div className="page-photo">{photo && <img src={photo.dataUrl} alt={lang === "id" ? "Halaman buku pelajaran yang diunggah" : "The uploaded textbook page"} />}</div>
             <div className="mid">
             <ol className="stages" aria-live="polite">
-              {STAGES.map((label, i) => {
+              {STAGES[lang].map((label, i) => {
                 const done = step === "done" || i < stage;
                 const active = !done && i === stage && step !== "error";
                 return (
-                  <li key={label} className={done ? "done" : active ? "active" : "todo"}>
+                  <li key={i} className={done ? "done" : active ? "active" : "todo"}>
                     <DotMark ok={done ? true : step === "error" && i === stage ? false : null} active={active} size={30} />
                     {label}
                   </li>
                 );
               })}
             </ol>
-            {saved?.review && step === "done" && <ReviewNote review={saved.review} approved={Boolean(saved.approved)} />}
+            {saved?.review && step === "done" && <ReviewNote review={saved.review} approved={Boolean(saved.approved)} lang={lang} />}
             </div>
-            <div className="emerge" aria-label="Tactile figure">
+            <div className="emerge" aria-label={lang === "id" ? "Gambar taktil" : "Tactile figure"}>
               {saved && sheet ? (
                 <FigureView saved={saved} sheet={sheet} reveal={reveal} lang={lang} />
               ) : draft && draftSheet ? (
                 <div className="draft">
                   <FigureView saved={draft} sheet={draftSheet} lang={lang} showOriginal />
-                  <p className="draft-note" aria-live="polite">Gemini is comparing its drawing with the page{round > 1 ? ", again" : ""}…</p>
+                  <p className="draft-note" aria-live="polite">{lang === "id" ? `Gemini sedang membandingkan gambarnya dengan halaman${round > 1 ? ", sekali lagi" : ""}…` : `Gemini is comparing its drawing with the page${round > 1 ? ", again" : ""}…`}</p>
                 </div>
               ) : (
                 <p className="waiting">
-                  {step === "error" ? "Stopped." : "Gemini is reading the page…"}
+                  {step === "error" ? (lang === "id" ? "Dihentikan." : "Stopped.") : (lang === "id" ? "Gemini sedang membaca halaman…" : "Gemini is reading the page…")}
                 </p>
               )}
             </div>
-            {error && <p className="add-error" role="alert">{error}</p>}
+            {error && <p className="add-error" role="alert">{error[lang]}</p>}
             <div className="add-foot">
-              {sheet && step === "done" ? <Checks checks={sheet.checks} /> : <span />}
+              {sheet && step === "done" ? <Checks checks={sheet.checks} lang={lang} /> : <span />}
               <div className="actions">
                 {(step === "error" || (step === "done" && saved?.approved)) && (
-                  <button className="btn ghost" type="button" onClick={() => { setStep("pick"); setPhoto(null); setSaved(null); }}>Add another page</button>
+                  <button className="btn ghost" type="button" onClick={() => { setStep("pick"); setPhoto(null); setSaved(null); }}>{lang === "id" ? "Tambah halaman lain" : "Add another page"}</button>
                 )}
                 {step === "done" && saved && !saved.approved && (
-                  <button className="btn" type="button" onClick={approve}>Approve for printing</button>
+                  <button className="btn" type="button" onClick={approve}>{lang === "id" ? "Setujui untuk dicetak" : "Approve for printing"}</button>
                 )}
-                {step === "done" && saved?.approved && <a className="btn" href={`#/figure/${saved.id}`}>Explore sheet {saved.number}</a>}
+                {step === "done" && saved?.approved && <a className="btn" href={`#/figure/${saved.id}`}>{lang === "id" ? `Jelajahi lembar ${saved.number}` : `Explore sheet ${saved.number}`}</a>}
               </div>
             </div>
           </>
@@ -246,17 +255,21 @@ export function AddPage({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => v
 }
 
 /** What Gemini's self-check found and fixed, for the teacher to read before approving. */
-function ReviewNote({ review, approved }: { review: NonNullable<SavedFigure["review"]>; approved: boolean }) {
-  if (!review.rounds) return <div className="review"><b>Self-check unavailable.</b> Compare the sheet with the original before approving.</div>;
+function ReviewNote({ review, approved, lang }: { review: NonNullable<SavedFigure["review"]>; approved: boolean; lang: Lang }) {
+  if (!review.rounds) {
+    return lang === "id"
+      ? <div className="review"><b>Pemeriksaan mandiri tidak tersedia.</b> Bandingkan lembar dengan aslinya sebelum menyetujui.</div>
+      : <div className="review"><b>Self-check unavailable.</b> Compare the sheet with the original before approving.</div>;
+  }
   return (
     <div className="review" aria-live="polite">
-      <b>Gemini checked its drawing against the page{review.rounds > 1 ? `, ${review.rounds} times` : ""}.</b>
+      <b>{lang === "id" ? `Gemini memeriksa gambarnya terhadap halaman${review.rounds > 1 ? `, ${review.rounds} kali` : ""}.` : `Gemini checked its drawing against the page${review.rounds > 1 ? `, ${review.rounds} times` : ""}.`}</b>
       {review.findings.length ? (
         <ul>{review.findings.map((f, i) => <li key={i}>{f.note_en}</li>)}</ul>
       ) : (
-        <p>It matches the page. Nothing needed fixing.</p>
+        <p>{lang === "id" ? "Gambarnya sesuai dengan halaman. Tidak ada yang perlu diperbaiki." : "It matches the page. Nothing needed fixing."}</p>
       )}
-      <p className="review-tail">{approved ? "Approved for printing." : "Look it over beside the original, then approve it."}</p>
+      <p className="review-tail">{approved ? (lang === "id" ? "Disetujui untuk dicetak." : "Approved for printing.") : (lang === "id" ? "Periksa di samping aslinya, lalu setujui." : "Look it over beside the original, then approve it.")}</p>
     </div>
   );
 }
