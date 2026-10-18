@@ -206,6 +206,11 @@ a { color: inherit; }
 .sheet-card .end span { font-size: 15px; font-weight: 600; }
 .sheet-card:hover .end b, .sheet-card:focus-visible .end b { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; }
 .tag { display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; border: 2px solid var(--yellow); border-radius: 999px; padding: 0 8px; margin-left: 8px; vertical-align: 2px; }
+.sheets > li { position: relative; }
+.sheet-card.has-delete .end { padding-right: 104px; }
+.card-delete { position: absolute; right: 17px; bottom: 15px; margin: 0; padding: 4px 12px; font-family: inherit; line-height: 1.2; color: var(--yellow); background: var(--ink); cursor: pointer; }
+.card-delete:hover { background: var(--yellow); color: var(--ink); }
+.card-delete:focus-visible { outline-color: var(--yellow); }
 .about { margin-top: 40px; padding-top: 22px; background-image: var(--dot-rule); background-size: 8px 6px; background-repeat: repeat-x; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px 36px; }
 .about h3 { margin: 0 0 6px; font-size: 20px; }
 .about p { margin: 0; font-size: 16px; font-weight: 600; max-width: 60ch; }

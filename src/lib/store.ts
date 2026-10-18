@@ -1,7 +1,7 @@
 import { get, set, del, keys } from "idb-keyval";
 import type { SavedFigure } from "./types";
 import { SAMPLES } from "../samples";
-import { listLibrary, saveToLibrary } from "./api";
+import { listLibrary, saveToLibrary, deleteFromLibrary } from "./api";
 
 // Sheets live in the class library on the server, shared by everyone with the class code, so a sheet the teacher
 // makes on her laptop opens on a student's phone by its number. This browser keeps a copy (IndexedDB) for offline use.
@@ -77,6 +77,8 @@ export async function figureByNumber(n: number) {
   return (await listFigures()).find((f) => f.number === n);
 }
 
+/** Removes a sheet from the class library, for everyone with the class code, and from this browser. */
 export async function deleteFigure(id: string) {
-  await del(PREFIX + id);
+  await deleteFromLibrary(currentClass(), id);
+  await del(PREFIX + id).catch(() => {});
 }
