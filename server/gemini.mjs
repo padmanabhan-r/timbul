@@ -55,7 +55,7 @@ export class GeminiError extends Error {
   }
 }
 
-async function generate(key, model, parts, schema, temperature = 0.2, timeout = 90_000) {
+async function generate(key, model, parts, schema, temperature = 0.2, timeout = 90_000, thinking = null) {
   let res;
   // A dropped connection is retried. A busy model (503) is not: generateAny moves on to the next model, which is
   // faster than waiting for this one.
@@ -67,7 +67,11 @@ async function generate(key, model, parts, schema, temperature = 0.2, timeout = 
         headers: { "Content-Type": "application/json", "x-goog-api-key": key },
         body: JSON.stringify({
           contents: [{ role: "user", parts }],
-          generationConfig: { temperature, responseMimeType: "application/json", responseSchema: schema },
+          generationConfig: {
+            temperature, responseMimeType: "application/json", responseSchema: schema,
+            // a yes/no style check needs little deliberation; Gemini 3 models take a thinking level
+            ...(thinking && model.startsWith("gemini-3") ? { thinkingConfig: { thinkingLevel: thinking } } : {}),
+          },
         }),
       });
     } catch (e) {
@@ -133,7 +137,7 @@ async function openrouter(model, parts, schema, temperature, effort = "low", tim
 const DEADLINE = 55_000;
 
 /** Tries each model in turn; moves on when one is busy (503) or its free allowance is used up (429). */
-async function generateAny(key, models, parts, schema, temperature, fallback = [], effort = "low", timeout = 90_000) {
+async function generateAny(key, models, parts, schema, temperature, fallback = [], effort = "low", timeout = 90_000, thinking = null) {
   const end = Date.now() + DEADLINE;
   let last;
   // without an OpenRouter key its models are left out, so a busy Google chain ends on "busy", not on a key error
@@ -154,7 +158,7 @@ async function generateAny(key, models, parts, schema, temperature, fallback = [
       }
     }
     try {
-      return { result: await generate(key, model, parts, schema, temperature, wait), model };
+      return { result: await generate(key, model, parts, schema, temperature, wait, thinking), model };
     } catch (e) {
       last = e;
       const moveOn = e instanceof GeminiError && (e.kind === "quota" || e.kind === "model" || e.status === 503 || e.status === 500 || e.status === 502);
@@ -343,7 +347,7 @@ export async function verifyFigure(key, { image, mime, drawing, figure, checks =
   ];
   // The check is a safeguard, not a gate: two models at most, 26 seconds each so the second still fits inside the
   // 55-second limit when the first stalls, then the teacher's own look decides.
-  const { result, model } = await generateAny(key, MODELS.read.slice(0, 2), parts, VERIFY_SCHEMA, 0.1, FALLBACK.read.slice(0, 1), "low", 26_000);
+  const { result, model } = await generateAny(key, MODELS.read.slice(0, 2), parts, VERIFY_SCHEMA, 0.1, FALLBACK.read.slice(0, 1), "low", 26_000, process.env.TIMBUL_VERIFY_THINKING || "low");
   return { ...applyReview(figure, result), model };
 }
 
