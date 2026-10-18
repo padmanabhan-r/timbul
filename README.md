@@ -11,7 +11,7 @@
 ![Theme](https://img.shields.io/badge/theme-Sustainability_%26_Social_Impact-ffcc00?style=flat-square&labelColor=000000)
 ![Status](https://img.shields.io/badge/status-working_end_to_end-ffcc00?style=flat-square&labelColor=000000)
 ![Languages](https://img.shields.io/badge/languages-English_%C2%B7_Bahasa_Indonesia-ffcc00?style=flat-square&labelColor=000000)
-[![Release](https://img.shields.io/badge/release-v1.0.1-ffcc00?style=flat-square&labelColor=000000)](https://github.com/padmanabhan-r/timbul/releases/tag/v1.0.1)
+[![Release](https://img.shields.io/badge/release-v1.1.0-ffcc00?style=flat-square&labelColor=000000)](https://github.com/padmanabhan-r/timbul/releases/tag/v1.1.0)
 [![License: MIT](https://img.shields.io/badge/license-MIT-ffcc00?style=flat-square&labelColor=000000)](LICENSE)
 
 <br />
@@ -90,7 +90,8 @@ never reach the classroom.
    braille.
 4. **Approves and prints.** Nothing prints until the teacher has compared the sheet with the
    original. The A4 SVG is in real millimetres, for swell paper or an embosser, with the sheet
-   number in braille and an orientation notch.
+   number in braille and an orientation notch. A teacher can delete a sheet from her own class
+   library after confirming; the shared demo library that every visitor opens is read-only.
 
 | Gemini checks its drawing against the page | The checked sheet, ready to approve |
 |---|---|
@@ -114,16 +115,18 @@ never reach the classroom.
 
 ## Real runs
 
-Our own runs on 14 and 15 October 2026, with `scripts/check-reading.mjs` and
-`scripts/check-point.mjs` in this repository. Nothing here is scripted.
+Our own runs on 14 to 18 October 2026, with `scripts/check-reading.mjs` and
+`scripts/check-point.mjs` in this repository, and a browser test of the live site on
+18 October. Nothing here is scripted.
 
 | Measured | Result |
 |---|---|
-| Photo of a textbook page to a checked sheet | **about 30 s**: find the figure 1 to 2 s, read 10 to 26 s, self-check 10 to 35 s |
+| Photo of a textbook page to a checked sheet | **about 30 s**: find the figure 1 to 2 s, read 10 to 26 s, self-check 4 to 7 s |
 | Self-check on a part we moved on purpose (the nucleus) | **caught in 1 round** and put back; the second round confirmed the fix |
 | Tactile-graphics checks, plant cell page | **4 of 4** passed (closest lines 3.1 mm against a 3 mm rule) |
 | Tactile-graphics checks, neural-network diagram | **4 of 4** passed after grouping |
 | Point and ask | **4 of 4** answered correctly: two parts, the same photo upside down, and no finger (7 to 21 s each) |
+| The live site, as a first-time visitor | **22 of 22** checks passed: open, explore, ask, Bahasa Indonesia, print, phone layout, a new page read and approved, opened on a second device, then deleted |
 
 ## The tech, part by part
 
@@ -177,8 +180,8 @@ library and the Gemini key from Secret Manager; `firebase.json` puts Firebase Ho
 ## Status
 
 Built and working end to end: find, read, self-check, the tactile sheet and its checks,
-teacher approval, the class library, exploring by touch and voice, Point and ask, and both
-languages.
+teacher approval, the class library with deleting, exploring by touch and voice, Point and ask,
+and English and Bahasa Indonesia on every screen.
 
 ## Next steps
 
