@@ -4,7 +4,7 @@ import { listFigures, currentClass, setClass, deleteFigure } from "../lib/store"
 import { SAMPLES } from "../samples";
 import { buildSheet } from "../lib/tactile";
 import { FigureView } from "../components/FigureView";
-import { MicIcon, TopBar } from "../components/Bits";
+import { MicIcon, TopBar, TrashIcon } from "../components/Bits";
 import { hearSheet, ApiError } from "../lib/api";
 import { speak, startRecording, type Recording } from "../lib/speech";
 
@@ -13,7 +13,7 @@ function Card({ saved, lang, onDelete }: { saved: SavedFigure; lang: Lang; onDel
   const passed = sheet.checks.filter((c) => c.pass).length;
   return (
     <li>
-      <a className={onDelete ? "sheet-card has-delete" : "sheet-card"} href={`#/figure/${saved.id}`}>
+      <a className="sheet-card" href={`#/figure/${saved.id}`}>
         <span className="thumb"><FigureView saved={saved} sheet={sheet} ink={false} lang={lang} /></span>
         <span className="end">
           <b>
@@ -29,9 +29,11 @@ function Card({ saved, lang, onDelete }: { saved: SavedFigure; lang: Lang; onDel
       </a>
       {/* beside the link, not inside it, so the card still opens the sheet and the button only deletes */}
       {onDelete && (
-        <button type="button" className="tag card-delete" onClick={onDelete} aria-label={lang === "id" ? `Hapus lembar ${saved.number}` : `Delete sheet ${saved.number}`}>
-          {lang === "id" ? "Hapus" : "Delete"}
-        </button>
+        <span className="card-delete-slot">
+          <button type="button" className="card-delete" onClick={onDelete} aria-label={lang === "id" ? `Hapus lembar ${saved.number}` : `Delete sheet ${saved.number}`} title={lang === "id" ? "Hapus" : "Delete"}>
+            <TrashIcon />
+          </button>
+        </span>
       )}
     </li>
   );

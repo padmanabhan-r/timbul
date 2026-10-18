@@ -70,6 +70,15 @@ export function MicIcon() {
   );
 }
 
+/** A trash can, the usual sign for delete. */
+export function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10.5 11v5.5M13.5 11v5.5" />
+    </svg>
+  );
+}
+
 /** Speaker marks for the conversation: a braille-like cell for the student, a full cell for Timbul. */
 export function Who({ who }: { who: "student" | "timbul" }) {
   const cells = who === "student" ? [[8, 6], [8, 14], [16, 22]] : [[8, 6], [16, 6], [8, 14], [16, 14], [8, 22], [16, 22]];
